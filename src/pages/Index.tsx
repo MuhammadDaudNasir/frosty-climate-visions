@@ -102,9 +102,11 @@ const Index = () => {
           )}
         </main>
         
-        {/* Footer */}
-        <footer className="text-center text-white/40 text-xs mt-8 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-          <p>Data provided by WeatherAPI.com</p>
+        {/* Footer with Powered by Pineapple and copyright */}
+        <footer className="text-center mt-8 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+          <p className="text-white/40 text-xs mb-1">Data provided by WeatherAPI.com</p>
+          <p className="text-white/30 text-[10px] mb-1">Powered by Pineapple</p>
+          <p className="text-white/40 text-xs">© 2025 Climate Vision. All rights reserved.</p>
         </footer>
       </div>
     </WeatherBackground>
