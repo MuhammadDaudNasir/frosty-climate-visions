@@ -1,16 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import WeatherBackground from '@/components/WeatherBackground';
 import WeatherCard from '@/components/WeatherCard';
 import TimeDisplay from '@/components/TimeDisplay';
-import LocationSelector from '@/components/LocationSelector';
-import { useWeather } from '@/hooks/useWeather';
+import EnhancedLocationSelector from '@/components/EnhancedLocationSelector';
+import MoonPhaseWidget from '@/components/MoonPhaseWidget';
+import PrecipitationWidget from '@/components/PrecipitationWidget';
+import UVIndexWidget from '@/components/UVIndexWidget';
+import WindMapWidget from '@/components/WindMapWidget';
+import { useWeather, ExtendedWeatherData } from '@/hooks/useWeather';
 import { getWeatherCondition } from '@/utils/weatherUtils';
-import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2, LogIn, LogOut, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { weatherData, loading, error, location, changeLocation } = useWeather();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   
   useEffect(() => {
     if (weatherData) {
@@ -48,29 +57,123 @@ const Index = () => {
     greeting = "Good evening";
   }
 
+  // Calculate precipitation data
+  const getPrecipitationData = (data: ExtendedWeatherData) => {
+    const currentHour = new Date(data.location.localtime).getHours();
+    const hourlyData = data.hourlyForecast?.[currentHour];
+    
+    if (!hourlyData) {
+      return { chance: 0, amount: 0, type: 'none' as const };
+    }
+    
+    const willRain = hourlyData.will_it_rain === 1;
+    const willSnow = hourlyData.will_it_snow === 1;
+    const chanceOfRain = hourlyData.chance_of_rain;
+    const chanceOfSnow = hourlyData.chance_of_snow;
+    
+    return {
+      chance: Math.max(chanceOfRain, chanceOfSnow),
+      amount: hourlyData.precip_mm,
+      type: willSnow ? 'snow' as const : willRain ? 'rain' as const : 'none' as const
+    };
+  };
+
+  // Get moon phase data
+  const getMoonPhaseData = (data: ExtendedWeatherData) => {
+    if (!data.astronomy?.astro) {
+      return { phase: 0, illumination: 0 };
+    }
+    
+    const moonPhaseText = data.astronomy.astro.moon_phase;
+    const moonIllumination = parseInt(data.astronomy.astro.moon_illumination, 10) / 100;
+    
+    // Convert text moon phase to numeric value (0-1)
+    let phase = 0;
+    if (moonPhaseText === "New Moon") phase = 0;
+    else if (moonPhaseText === "Waxing Crescent") phase = 0.125;
+    else if (moonPhaseText === "First Quarter") phase = 0.25;
+    else if (moonPhaseText === "Waxing Gibbous") phase = 0.375;
+    else if (moonPhaseText === "Full Moon") phase = 0.5;
+    else if (moonPhaseText === "Waning Gibbous") phase = 0.625;
+    else if (moonPhaseText === "Last Quarter") phase = 0.75;
+    else if (moonPhaseText === "Waning Crescent") phase = 0.875;
+    
+    return { phase, illumination: moonIllumination };
+  };
+
+  const precipitationData = getPrecipitationData(weatherData);
+  const { phase: moonPhase, illumination: moonIllumination } = getMoonPhaseData(weatherData);
+
   return (
     <WeatherBackground condition={weatherCondition} isDay={isDay}>
       <div className="min-h-screen container mx-auto px-4 py-8 flex flex-col max-w-4xl">
         {/* Header section with location and time */}
-        <header className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12 animate-slide-down">
+        <header className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 animate-slide-down">
           <div className="flex items-center">
             <h1 className="text-2xl font-light text-white frosted-text">Climate Vision</h1>
           </div>
-          <LocationSelector 
-            currentLocation={location} 
-            onLocationChange={changeLocation} 
-          />
+          <div className="flex items-center gap-4">
+            <EnhancedLocationSelector 
+              currentLocation={location} 
+              onLocationChange={changeLocation} 
+            />
+            
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                  onClick={() => navigate('/profile')}
+                >
+                  {profile?.avatar_url ? (
+                    <img 
+                      src={profile.avatar_url} 
+                      alt={profile.username || user.email} 
+                      className="h-8 w-8 rounded-full"
+                    />
+                  ) : (
+                    <User size={18} />
+                  )}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                  onClick={signOut}
+                >
+                  <LogOut size={18} />
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                onClick={() => navigate('/auth')}
+              >
+                <LogIn size={18} className="mr-2" />
+                Login
+              </Button>
+            )}
+          </div>
         </header>
         
         {/* Main content area */}
-        <main className="flex-1 flex flex-col items-center justify-center gap-10">
+        <main className="flex-1 flex flex-col items-center justify-center gap-6">
           <div className="w-full animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <TimeDisplay className="mb-8" />
-            <h2 className="text-3xl text-center font-light text-white frosted-text mb-2">
-              {greeting}, <span className="font-normal">{weatherData.location.name}</span>
+            <TimeDisplay className="mb-4" />
+            
+            {/* Centered greeting with username from profile if available */}
+            <h2 className="text-3xl text-center font-light text-white frosted-text mb-1">
+              {greeting}
+              {user && profile?.username && (
+                <span className="font-normal">, {profile.username}</span>
+              )}
             </h2>
-            <p className="text-center text-white/70">
-              {weatherData.location.region && `${weatherData.location.region}, `}{weatherData.location.country}
+            
+            <p className="text-center text-white/70 mb-4">
+              {weatherData.location.name}, {weatherData.location.country}
             </p>
           </div>
           
@@ -78,9 +181,25 @@ const Index = () => {
             <WeatherCard weatherData={weatherData} />
           </div>
           
+          {/* Additional weather widgets */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <UVIndexWidget uvIndex={weatherData.current.uv} />
+            <MoonPhaseWidget 
+              moonPhase={moonPhase} 
+              moonIllumination={moonIllumination} 
+            />
+            <PrecipitationWidget 
+              precipitationData={precipitationData} 
+            />
+            <WindMapWidget 
+              windSpeed={weatherData.current.wind_kph} 
+              windDirection={weatherData.current.wind_dir} 
+            />
+          </div>
+          
           {/* Forecast preview */}
           {weatherData.forecast && (
-            <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
               {weatherData.forecast.forecastday.slice(0, 3).map((day) => (
                 <div key={day.date} className="frost-panel p-4 rounded-2xl hover-lift transition-all">
                   <div className="text-white text-center mb-2">{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
