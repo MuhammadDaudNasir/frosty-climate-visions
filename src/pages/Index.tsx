@@ -81,11 +81,18 @@ const Index = () => {
   // Get moon phase data
   const getMoonPhaseData = (data: ExtendedWeatherData) => {
     if (!data.astronomy?.astro) {
-      return { phase: 0, illumination: 0 };
+      return { 
+        phase: 0, 
+        illumination: 0,
+        moonrise: '',
+        moonset: ''
+      };
     }
     
     const moonPhaseText = data.astronomy.astro.moon_phase;
     const moonIllumination = parseInt(data.astronomy.astro.moon_illumination, 10) / 100;
+    const moonrise = data.astronomy.astro.moonrise;
+    const moonset = data.astronomy.astro.moonset;
     
     // Convert text moon phase to numeric value (0-1)
     let phase = 0;
@@ -98,11 +105,36 @@ const Index = () => {
     else if (moonPhaseText === "Last Quarter") phase = 0.75;
     else if (moonPhaseText === "Waning Crescent") phase = 0.875;
     
-    return { phase, illumination: moonIllumination };
+    return { 
+      phase, 
+      illumination: moonIllumination,
+      moonrise,
+      moonset
+    };
   };
 
   const precipitationData = getPrecipitationData(weatherData);
-  const { phase: moonPhase, illumination: moonIllumination } = getMoonPhaseData(weatherData);
+  const { 
+    phase: moonPhase, 
+    illumination: moonIllumination,
+    moonrise: moonriseTime,
+    moonset: moonsetTime
+  } = getMoonPhaseData(weatherData);
+  
+  // Get hourly forecasts for widgets
+  const getHourlyForecasts = () => {
+    if (!weatherData.hourlyForecast) return [];
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    return weatherData.hourlyForecast.filter(hour => {
+      const hourTime = new Date(hour.time);
+      return hourTime.getHours() >= currentHour;
+    });
+  };
+  
+  const hourlyForecasts = getHourlyForecasts();
 
   return (
     <WeatherBackground condition={weatherCondition} isDay={isDay}>
@@ -186,14 +218,22 @@ const Index = () => {
             <UVIndexWidget uvIndex={weatherData.current.uv} />
             <MoonPhaseWidget 
               moonPhase={moonPhase} 
-              moonIllumination={moonIllumination} 
+              moonIllumination={moonIllumination}
+              moonriseTime={moonriseTime}
+              moonsetTime={moonsetTime}
             />
             <PrecipitationWidget 
-              precipitationData={precipitationData} 
+              precipitationData={precipitationData}
+              hourlyForecast={hourlyForecasts}
             />
             <WindMapWidget 
               windSpeed={weatherData.current.wind_kph} 
-              windDirection={weatherData.current.wind_dir} 
+              windDirection={weatherData.current.wind_dir}
+              hourlyForecast={hourlyForecasts.map(hour => ({
+                time: hour.time,
+                wind_kph: hour.wind_kph || 0,
+                wind_dir: hour.wind_dir || 'N'
+              }))}
             />
           </div>
           

@@ -26,6 +26,8 @@ export interface ExtendedWeatherData extends WeatherData {
     will_it_rain: number;
     will_it_snow: number;
     precip_mm: number;
+    wind_kph?: number;
+    wind_dir?: string;
     condition: {
       text: string;
       icon: string;
@@ -60,7 +62,16 @@ export function useWeather(defaultLocation = 'San Francisco') {
       // Process the data to add additional fields for our widgets
       const processedData: ExtendedWeatherData = {
         ...data,
-        astronomy: data.astronomy?.astro ? { astro: data.astronomy.astro } : undefined,
+        astronomy: data.forecast?.forecastday[0]?.astro ? { 
+          astro: {
+            moon_phase: data.forecast.forecastday[0].astro.moon_phase,
+            moon_illumination: data.forecast.forecastday[0].astro.moon_illumination,
+            sunrise: data.forecast.forecastday[0].astro.sunrise,
+            sunset: data.forecast.forecastday[0].astro.sunset,
+            moonrise: data.forecast.forecastday[0].astro.moonrise,
+            moonset: data.forecast.forecastday[0].astro.moonset
+          } 
+        } : undefined,
         hourlyForecast: data.forecast?.forecastday[0]?.hour?.map((hour: any) => ({
           time: hour.time,
           temp_c: hour.temp_c,
@@ -69,6 +80,8 @@ export function useWeather(defaultLocation = 'San Francisco') {
           will_it_rain: hour.will_it_rain,
           will_it_snow: hour.will_it_snow,
           precip_mm: hour.precip_mm,
+          wind_kph: hour.wind_kph,
+          wind_dir: hour.wind_dir,
           condition: {
             text: hour.condition.text,
             icon: hour.condition.icon,
