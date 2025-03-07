@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Wind } from 'lucide-react';
 import {
@@ -65,10 +64,7 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
     return 'Hurricane force';
   };
 
-  const fullDirection = getFullWindDirection(windDirection);
-  const intensity = getWindIntensity(windSpeed);
-
-  // Calculate rotation angle for the arrow (north = 0°, east = 90°, etc.)
+  // Get rotation angle for the arrow (north = 0°, east = 90°, etc.)
   const getRotationAngle = (dir: string): number => {
     const directions: Record<string, number> = {
       'N': 0,
@@ -90,8 +86,6 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
     };
     return directions[dir] || 0;
   };
-
-  const rotationAngle = getRotationAngle(windDirection);
 
   // Format time for hourly forecast
   const formatHourTime = (timeStr: string) => {
@@ -129,6 +123,9 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
       .slice(0, 6);
   };
 
+  const fullDirection = getFullWindDirection(windDirection);
+  const intensity = getWindIntensity(windSpeed);
+  const rotationAngle = getRotationAngle(windDirection);
   const nextHoursWindForecast = getHourlyWindForecast();
 
   // Convert wind speed to color
@@ -180,22 +177,22 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md frost-glass-dark border-white/10 backdrop-blur-xl bg-black/60">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-white">
               <Wind size={18} />
               <span>Wind Details</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-white/70">
               Current wind speed, direction and forecast
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4 text-white">
             <div className="flex items-center justify-around">
               <div className="text-center">
                 <div className="relative h-24 w-24 mx-auto flex items-center justify-center">
-                  <div className="absolute border-2 border-secondary rounded-full h-full w-full"></div>
+                  <div className="absolute border-2 border-white/20 rounded-full h-full w-full"></div>
                   <div className="absolute h-20 w-1.5 bg-blue-500 rounded-full origin-bottom transform" 
                     style={{ transform: `rotate(${rotationAngle}deg)`, bottom: '50%' }}></div>
                   <div className="absolute w-4 h-4 bg-blue-500 transform rotate-45" 
@@ -205,14 +202,14 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
                   </div>
                 </div>
                 <div className="mt-2">
-                  <div className="text-sm text-muted-foreground">Direction</div>
+                  <div className="text-sm text-white/60">Direction</div>
                   <div className="text-sm">{fullDirection}</div>
                 </div>
               </div>
               
               <div className="text-center">
                 <div className="text-4xl font-light">{windSpeed}</div>
-                <div className="text-sm text-muted-foreground">km/h</div>
+                <div className="text-sm text-white/60">km/h</div>
                 <div className="mt-2">
                   <div className="text-sm font-medium">{intensity}</div>
                   <div className="mt-1 inline-block px-2 py-1 rounded-full text-xs text-white" 
@@ -223,18 +220,18 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
               </div>
             </div>
             
-            <div className="space-y-2 pt-2 border-t">
+            <div className="space-y-2 pt-2 border-t border-white/10">
               <h4 className="font-medium text-sm">Effects</h4>
-              <p className="text-sm">{getWindEffects(windSpeed)}</p>
+              <p className="text-sm text-white/80">{getWindEffects(windSpeed)}</p>
             </div>
             
             {nextHoursWindForecast.length > 0 && (
-              <div className="space-y-3 pt-2 border-t">
+              <div className="space-y-3 pt-2 border-t border-white/10">
                 <h4 className="font-medium text-sm">Wind Forecast</h4>
                 <div className="grid grid-cols-3 gap-2">
                   {nextHoursWindForecast.map((hour, index) => (
-                    <div key={index} className="text-center p-2 rounded-md bg-secondary/30">
-                      <div className="text-xs text-muted-foreground">{formatHourTime(hour.time)}</div>
+                    <div key={index} className="text-center p-2 rounded-md bg-white/10">
+                      <div className="text-xs text-white/60">{formatHourTime(hour.time)}</div>
                       <div className="my-1">{hour.wind_kph} km/h</div>
                       <div className="text-xs">{hour.wind_dir}</div>
                     </div>
@@ -243,7 +240,7 @@ const WindMapWidget: React.FC<WindMapWidgetProps> = ({
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm pt-2 border-t">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm pt-2 border-t border-white/10">
               <h4 className="font-medium text-sm col-span-2 mb-1">Beaufort Scale</h4>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>

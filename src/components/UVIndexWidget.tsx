@@ -101,50 +101,50 @@ const UVIndexWidget: React.FC<UVIndexWidgetProps> = ({ uvIndex, className = "" }
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md frost-glass-dark border-white/10 backdrop-blur-xl bg-black/60">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-white">
               <Sun className={color} size={18} />
               <span>UV Index: <span className={color}>{uvIndex} - {level}</span></span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-white/70">
               Current ultraviolet radiation level at your location
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4 text-white">
             <UvScale />
             
             <div className="space-y-2">
               <h4 className="font-medium text-sm">What does this mean?</h4>
-              <p className="text-sm text-muted-foreground">{detailedAdvice}</p>
+              <p className="text-sm text-white/80">{detailedAdvice}</p>
             </div>
             
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Protection required</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-primary' : 'bg-muted'}`}></div>
-                  <span className={uvIndex >= 3 ? '' : 'text-muted-foreground'}>Sunscreen</span>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-white' : 'bg-white/30'}`}></div>
+                  <span className={uvIndex >= 3 ? '' : 'text-white/60'}>Sunscreen</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-primary' : 'bg-muted'}`}></div>
-                  <span className={uvIndex >= 3 ? '' : 'text-muted-foreground'}>Sunglasses</span>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-white' : 'bg-white/30'}`}></div>
+                  <span className={uvIndex >= 3 ? '' : 'text-white/60'}>Sunglasses</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 5 ? 'bg-primary' : 'bg-muted'}`}></div>
-                  <span className={uvIndex >= 5 ? '' : 'text-muted-foreground'}>Hat</span>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 5 ? 'bg-white' : 'bg-white/30'}`}></div>
+                  <span className={uvIndex >= 5 ? '' : 'text-white/60'}>Hat</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 8 ? 'bg-primary' : 'bg-muted'}`}></div>
-                  <span className={uvIndex >= 8 ? '' : 'text-muted-foreground'}>Seek Shade</span>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 8 ? 'bg-white' : 'bg-white/30'}`}></div>
+                  <span className={uvIndex >= 8 ? '' : 'text-white/60'}>Seek Shade</span>
                 </div>
               </div>
             </div>
             
             <div className="space-y-2">
               <h4 className="font-medium text-sm">UV Index Times</h4>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-white/70">
                 UV radiation is typically strongest between 10am and 4pm, even on cloudy days.
                 UV intensity can be affected by reflective surfaces like water, sand, and snow.
               </p>

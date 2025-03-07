@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CloudRain } from 'lucide-react';
 import {
@@ -31,20 +30,18 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
   className = "" 
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  
   const { chance, amount, type = 'rain' } = precipitationData;
   
-  // Get icon based on precipitation type
   const getIcon = () => {
     if (type === 'none' || chance === 0) return '☀️';
     if (type === 'snow') return '❄️';
     
-    // Rain icon - could be light, moderate or heavy based on amount
     if (amount < 1) return '🌦️';
     if (amount < 5) return '🌧️';
     return '⛈️';
   };
   
-  // Get description text
   const getDescription = () => {
     if (type === 'none' || chance === 0) return 'No precipitation expected';
     if (chance < 30) return 'Low chance of precipitation';
@@ -52,7 +49,6 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
     return 'High chance of precipitation';
   };
 
-  // Get detailed description based on type and amount
   const getDetailedDescription = () => {
     if (type === 'none' || chance === 0) {
       return 'Clear conditions are expected with no precipitation in the forecast.';
@@ -64,7 +60,6 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
       return 'Heavy snowfall expected.';
     }
     
-    // Rain descriptions
     if (amount < 0.5) return 'Very light rain or drizzle possible.';
     if (amount < 2) return 'Light rain showers expected.';
     if (amount < 5) return 'Moderate rainfall expected.';
@@ -72,14 +67,12 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
     return 'Very heavy rainfall or potential flooding conditions.';
   };
 
-  // Format time for hourly forecast
   const formatHourTime = (timeStr: string) => {
     if (!timeStr) return '';
     const date = new Date(timeStr);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Calculate the next 6 hours of precipitation forecast
   const getHourlyForecast = () => {
     if (!hourlyForecast || hourlyForecast.length === 0) return [];
     
@@ -112,37 +105,37 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
         </div>
         
         <div className="text-center">
-          <p className="text-white text-base">{chance}% chance</p>
+          <p className="text-white text-base">{precipitationData.chance}% chance</p>
           <p className="text-white/70 text-xs mt-1">{getDescription()}</p>
-          {amount > 0 && (
+          {precipitationData.amount > 0 && (
             <p className="text-white/70 text-xs mt-1">
-              Expected: {amount} mm {type === 'snow' ? '(snow)' : ''}
+              Expected: {precipitationData.amount} mm {precipitationData.type === 'snow' ? '(snow)' : ''}
             </p>
           )}
         </div>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md frost-glass-dark border-white/10 backdrop-blur-xl bg-black/60">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-white">
               <CloudRain size={18} />
               <span>Precipitation Forecast</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-white/70">
               Current and upcoming precipitation information
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4 text-white">
             <div className="flex items-center space-x-4">
               <div className="text-5xl">{getIcon()}</div>
               <div>
-                <h3 className="text-lg font-medium">{chance}% Chance</h3>
-                <p className="text-sm text-muted-foreground">{getDescription()}</p>
-                {amount > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    {amount} mm expected {type === 'snow' ? '(snowfall)' : ''}
+                <h3 className="text-lg font-medium">{precipitationData.chance}% Chance</h3>
+                <p className="text-sm text-white/70">{getDescription()}</p>
+                {precipitationData.amount > 0 && (
+                  <p className="text-sm text-white/70">
+                    {precipitationData.amount} mm expected {precipitationData.type === 'snow' ? '(snowfall)' : ''}
                   </p>
                 )}
               </div>
@@ -150,11 +143,11 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
             
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Forecast Details</h4>
-              <p className="text-sm">{getDetailedDescription()}</p>
+              <p className="text-sm text-white/80">{getDetailedDescription()}</p>
             </div>
             
             {nextHoursForecast.length > 0 && (
-              <div className="space-y-3 pt-2 border-t">
+              <div className="space-y-3 pt-2 border-t border-white/10">
                 <h4 className="font-medium text-sm">Next Hours</h4>
                 {nextHoursForecast.map((hour, index) => {
                   const hourChance = Math.max(hour.chance_of_rain, hour.chance_of_snow);
@@ -168,14 +161,15 @@ const PrecipitationWidget: React.FC<PrecipitationWidgetProps> = ({
                           {isSnow ? '❄️' : '💧'} {hourChance}%
                         </span>
                       </div>
-                      <Progress value={hourChance} className="h-1" />
+                      <Progress value={hourChance} className="h-1 bg-white/10" 
+                                indicatorClassName="bg-blue-400" />
                     </div>
                   );
                 })}
               </div>
             )}
             
-            <div className="space-y-2 pt-2 border-t">
+            <div className="space-y-2 pt-2 border-t border-white/10">
               <h4 className="font-medium text-sm">Precipitation Scale</h4>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div className="flex items-center gap-2">

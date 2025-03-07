@@ -255,7 +255,7 @@ const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> = ({
         </button>
       ) : (
         <div className="relative">
-          <form onSubmit={handleSubmit} className="frost-panel p-1 rounded-full inline-flex items-center transition-all">
+          <form onSubmit={handleSubmit} className="frost-panel p-1 rounded-full inline-flex items-center transition-all min-w-[300px]">
             <Search size={18} className="ml-3 mr-2 text-white/70" />
             <input
               ref={inputRef}
@@ -269,7 +269,7 @@ const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> = ({
                 }
               }}
               placeholder="Search location..."
-              className="bg-transparent border-none outline-none text-sm text-white placeholder:text-white/50 w-52"
+              className="bg-transparent border-none outline-none text-sm text-white placeholder:text-white/50 w-full"
               autoComplete="off"
             />
             {inputValue && (
@@ -293,11 +293,11 @@ const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> = ({
             </button>
           </form>
 
-          {/* Suggestions dropdown */}
+          {/* Suggestions dropdown - updated styling */}
           {(suggestions.length > 0 || showSavedLocations) && (
             <div 
               ref={suggestionsRef}
-              className="absolute top-full left-0 mt-2 w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg z-10 overflow-hidden frost-panel"
+              className="absolute top-full left-0 mt-2 w-full bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg shadow-lg z-10 overflow-hidden frost-glass-dark animate-blur-in"
             >
               {showSavedLocations && savedLocations.length > 0 && (
                 <div className="p-2">
@@ -306,7 +306,7 @@ const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> = ({
                     <div 
                       key={`saved-${index}`}
                       onClick={() => handleLocationSelect(location)}
-                      className="flex items-center justify-between p-2 hover:bg-white/10 rounded cursor-pointer"
+                      className="flex items-center justify-between p-2 hover:bg-white/10 rounded cursor-pointer transition-colors"
                     >
                       <div className="flex items-center">
                         <MapPin size={14} className="text-white/60 mr-2" />
@@ -337,7 +337,7 @@ const EnhancedLocationSelector: React.FC<EnhancedLocationSelectorProps> = ({
                 <div 
                   key={index}
                   onClick={() => handleLocationSelect(`${suggestion.name}`)}
-                  className="flex items-center justify-between p-2 hover:bg-white/10 cursor-pointer"
+                  className="flex items-center justify-between p-2 hover:bg-white/10 cursor-pointer transition-colors"
                 >
                   <div className="flex flex-col">
                     <span className="text-white text-sm">{suggestion.name}</span>

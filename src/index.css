@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,11 +77,11 @@
   
   /* Custom classes for frost effect */
   .frost-glass {
-    @apply backdrop-blur-xl bg-frost border border-white/10 shadow-md;
+    @apply backdrop-blur-xl bg-white/10 border border-white/10 shadow-md;
   }
   
   .frost-glass-dark {
-    @apply backdrop-blur-xl bg-black/20 border border-white/10 shadow-md;
+    @apply backdrop-blur-xl bg-black/40 border border-white/10 shadow-md;
   }
 
   .frost-panel {
@@ -106,6 +105,22 @@
 .hover-lift:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Add blur-in animation for dropdowns */
+@keyframes blurIn {
+  from {
+    backdrop-filter: blur(0);
+    background-color: rgba(0, 0, 0, 0);
+  }
+  to {
+    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+}
+
+.animate-blur-in {
+  animation: blurIn 0.3s ease-out forwards;
 }
 
 /* Weather background gradients */

@@ -100,68 +100,68 @@ const MoonPhaseWidget: React.FC<MoonPhaseWidgetProps> = ({
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md frost-glass-dark border-white/10 backdrop-blur-xl bg-black/60">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-white">
               <Moon size={18} />
               <span>Moon Phase</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-white/70">
               Current lunar phase and illumination
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4 text-white">
             <div className="flex flex-col items-center justify-center p-4">
               <span className="text-6xl mb-2">{moonIcon}</span>
               <h3 className="text-lg font-medium">{moonPhaseText}</h3>
-              <p className="text-muted-foreground">{Math.round(moonIllumination * 100)}% illuminated</p>
+              <p className="text-white/70">{Math.round(moonIllumination * 100)}% illuminated</p>
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm">{moonDescription}</p>
+              <p className="text-sm text-white/80">{moonDescription}</p>
             </div>
             
             {(moonriseTime || moonsetTime) && (
-              <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/10">
                 {moonriseTime && (
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Moonrise</p>
+                    <p className="text-sm text-white/60">Moonrise</p>
                     <p className="text-base">{moonriseTime}</p>
                   </div>
                 )}
                 {moonsetTime && (
                   <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Moonset</p>
+                    <p className="text-sm text-white/60">Moonset</p>
                     <p className="text-base">{moonsetTime}</p>
                   </div>
                 )}
               </div>
             )}
             
-            <div className="pt-2 border-t">
+            <div className="pt-2 border-t border-white/10">
               <h4 className="font-medium text-sm mb-2">Lunar Cycle</h4>
               <div className="flex justify-between items-center">
                 <div className="flex flex-col items-center">
                   <span className="text-2xl">🌑</span>
-                  <span className="text-xs">New</span>
+                  <span className="text-xs text-white/70">New</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-2xl">🌓</span>
-                  <span className="text-xs">First</span>
+                  <span className="text-xs text-white/70">First</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-2xl">🌕</span>
-                  <span className="text-xs">Full</span>
+                  <span className="text-xs text-white/70">Full</span>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-2xl">🌗</span>
-                  <span className="text-xs">Last</span>
+                  <span className="text-xs text-white/70">Last</span>
                 </div>
               </div>
-              <div className="w-full bg-secondary h-1 mt-2 rounded-full overflow-hidden">
+              <div className="w-full bg-white/10 h-1 mt-2 rounded-full overflow-hidden">
                 <div 
-                  className="bg-primary h-full" 
+                  className="bg-white/70 h-full" 
                   style={{ width: `${(moonPhase * 100)}%` }}
                 ></div>
               </div>
