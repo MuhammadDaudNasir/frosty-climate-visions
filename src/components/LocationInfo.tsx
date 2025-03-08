@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, ThermometerSun, Cloud, Umbrella, Calendar, Building } from 'lucide-react';
 import { formatDate } from '@/utils/weatherUtils';
 
@@ -22,18 +22,74 @@ interface LocationInfoProps {
 
 const LocationInfo: React.FC<LocationInfoProps> = ({ locationData }) => {
   const { name, country, region, lat, lon, climate, imageUrl } = locationData;
+  const [loadedImage, setLoadedImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const defaultImage = `https://source.unsplash.com/1600x900/?${encodeURIComponent(name + ' ' + country)}`;
+  // Create better search query for Unsplash
+  const getOptimizedSearchQuery = () => {
+    const searchTerms = [name];
+    
+    // Add relevant landmarks or features based on location
+    if (country === 'United States' || country === 'USA') {
+      searchTerms.push('cityscape');
+    } else if (country === 'Japan') {
+      searchTerms.push('landmark');
+    } else if (country === 'Saudi Arabia') {
+      searchTerms.push('architecture');
+    } else {
+      searchTerms.push('landmark');
+    }
+    
+    // Add climate-related terms if available
+    if (climate) {
+      if (climate.averageTemp > 25) {
+        searchTerms.push('sunny');
+      } else if (climate.averageTemp < 10) {
+        searchTerms.push('cold');
+      }
+    }
+    
+    return encodeURIComponent(searchTerms.join(' '));
+  };
+  
+  // Prepare high-quality image URL with optimized search terms
+  const defaultImage = `https://source.unsplash.com/1600x900/?${getOptimizedSearchQuery()}`;
+  
+  // Load and handle image
+  useEffect(() => {
+    setIsLoading(true);
+    const imgToLoad = imageUrl || defaultImage;
+    
+    // Preload image
+    const img = new Image();
+    img.src = imgToLoad;
+    img.onload = () => {
+      setLoadedImage(imgToLoad);
+      setIsLoading(false);
+    };
+    img.onerror = () => {
+      // Fallback to a more generic search if the specific one fails
+      const fallbackImage = `https://source.unsplash.com/1600x900/?${encodeURIComponent(country + ' landscape')}`;
+      setLoadedImage(fallbackImage);
+      setIsLoading(false);
+    };
+  }, [imageUrl, name, country]);
   
   return (
     <section className="py-16 overflow-hidden animate-fade-in" style={{ animationDelay: '0.3s' }}>
       <div className="relative w-full h-[60vh] mb-10 overflow-hidden rounded-xl">
-        <img 
-          src={imageUrl || defaultImage} 
-          alt={`${name}, ${country}`} 
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-10000 hover:scale-110"
-          loading="lazy"
-        />
+        {isLoading ? (
+          <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+            <div className="text-white/50">Loading image of {name}...</div>
+          </div>
+        ) : (
+          <img 
+            src={loadedImage || defaultImage} 
+            alt={`${name}, ${country}`} 
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-10000 hover:scale-110"
+            loading="lazy"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
         <div className="absolute bottom-0 w-full p-8">
           <h2 className="text-4xl md:text-5xl font-light text-white frosted-text mb-2 animate-slide-up" style={{ animationDelay: '0.5s' }}>
