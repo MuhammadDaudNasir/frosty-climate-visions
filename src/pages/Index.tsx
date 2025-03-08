@@ -12,6 +12,7 @@ import WindMapWidget from '@/components/WindMapWidget';
 import AirQualityWidget from '@/components/AirQualityWidget';
 import PrayerTimesWidget from '@/components/PrayerTimesWidget';
 import LocationInfo from '@/components/LocationInfo';
+import SavedLocations from '@/components/SavedLocations';
 import { useWeather, ExtendedWeatherData } from '@/hooks/useWeather';
 import { getWeatherCondition } from '@/utils/weatherUtils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -238,6 +239,16 @@ const Index = () => {
                 {weatherData.location.name}, {weatherData.location.country}
               </p>
             </div>
+            
+            {/* Saved locations section (only visible when logged in) */}
+            {user && (
+              <div className="w-full max-w-lg mx-auto mb-2" style={{ animationDelay: '0.3s' }}>
+                <SavedLocations 
+                  currentLocation={location} 
+                  onLocationSelect={changeLocation} 
+                />
+              </div>
+            )}
             
             <div className="w-full max-w-lg mx-auto animate-slide-up" style={{ animationDelay: '0.4s' }}>
               <WeatherCard weatherData={weatherData} />
