@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -123,6 +124,86 @@
   animation: blurIn 0.3s ease-out forwards;
 }
 
+/* Apple-style animations */
+@keyframes scaleReveal {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideFromBottom {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUpSpring {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+  80% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes smoothRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-scale-reveal {
+  animation: scaleReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-slide-from-bottom {
+  animation: slideFromBottom 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-fade-up-spring {
+  animation: fadeUpSpring 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-smooth-rotate {
+  animation: smoothRotate 20s linear infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
 /* Weather background gradients */
 .bg-clear-day {
   background: linear-gradient(to bottom, #4da0ff 0%, #a8d5ff 100%);
@@ -146,4 +227,60 @@
 
 .bg-stormy {
   background: linear-gradient(to bottom, #313131 0%, #535353 100%);
+}
+
+/* Animated background pattern for cards */
+.animated-bg-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: patternMove 20s linear infinite;
+}
+
+@keyframes patternMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
+}
+
+/* Dialog animations */
+.dialog-animation-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.dialog-animation-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.dialog-animation-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.dialog-animation-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Custom animation for widget interactions */
+.widget-hover-animation {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.widget-hover-animation:hover {
+  transform: scale(1.03);
+}
+
+/* Parallax effect for background elements */
+.parallax {
+  transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
 }

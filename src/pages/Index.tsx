@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WeatherBackground from '@/components/WeatherBackground';
 import WeatherCard from '@/components/WeatherCard';
@@ -9,23 +9,52 @@ import MoonPhaseWidget from '@/components/MoonPhaseWidget';
 import PrecipitationWidget from '@/components/PrecipitationWidget';
 import UVIndexWidget from '@/components/UVIndexWidget';
 import WindMapWidget from '@/components/WindMapWidget';
+import AirQualityWidget from '@/components/AirQualityWidget';
+import PrayerTimesWidget from '@/components/PrayerTimesWidget';
+import LocationInfo from '@/components/LocationInfo';
 import { useWeather, ExtendedWeatherData } from '@/hooks/useWeather';
 import { getWeatherCondition } from '@/utils/weatherUtils';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, LogIn, LogOut, User } from 'lucide-react';
+import { Loader2, LogIn, LogOut, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const { weatherData, loading, error, location, changeLocation } = useWeather();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showLocationInfo, setShowLocationInfo] = useState(false);
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const locationInfoRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     if (weatherData) {
       setIsInitialLoad(false);
     }
   }, [weatherData]);
+  
+  // Add scroll listener to show/hide location info
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const threshold = window.innerHeight * 0.2;
+      
+      if (scrollPosition > threshold && !showLocationInfo) {
+        setShowLocationInfo(true);
+      } else if (scrollPosition <= threshold && showLocationInfo) {
+        setShowLocationInfo(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [showLocationInfo]);
+  
+  // Scroll to location info section
+  const scrollToLocationInfo = () => {
+    if (locationInfoRef.current) {
+      locationInfoRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
   
   // Early return for initial loading state with nice loading animation
   if (isInitialLoad) {
@@ -138,135 +167,165 @@ const Index = () => {
 
   return (
     <WeatherBackground condition={weatherCondition} isDay={isDay}>
-      <div className="min-h-screen container mx-auto px-4 py-8 flex flex-col max-w-4xl">
-        {/* Header section with location and time */}
-        <header className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 animate-slide-down">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-light text-white frosted-text">Climate Vision</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <EnhancedLocationSelector 
-              currentLocation={location} 
-              onLocationChange={changeLocation} 
-            />
+      <div className="min-h-screen">
+        <div className="container mx-auto px-4 py-8 flex flex-col max-w-4xl">
+          {/* Header section with location and time */}
+          <header className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 animate-slide-down">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-light text-white frosted-text">Climate Vision</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <EnhancedLocationSelector 
+                currentLocation={location} 
+                onLocationChange={changeLocation} 
+              />
+              
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                    onClick={() => navigate('/profile')}
+                  >
+                    {profile?.avatar_url ? (
+                      <img 
+                        src={profile.avatar_url} 
+                        alt={profile.username || user.email} 
+                        className="h-8 w-8 rounded-full"
+                      />
+                    ) : (
+                      <User size={18} />
+                    )}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                    onClick={signOut}
+                  >
+                    <LogOut size={18} />
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                  onClick={() => navigate('/auth')}
+                >
+                  <LogIn size={18} className="mr-2" />
+                  Login
+                </Button>
+              )}
+            </div>
+          </header>
+          
+          {/* Main content area */}
+          <main className="flex-1 flex flex-col items-center justify-center gap-6">
+            <div className="w-full animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <TimeDisplay className="mb-4" />
+              
+              {/* Centered greeting with username from profile if available */}
+              <h2 className="text-3xl text-center font-light text-white frosted-text mb-1">
+                {greeting}
+                {user && profile?.username && (
+                  <span className="font-normal">, {profile.username}</span>
+                )}
+              </h2>
+              
+              <p className="text-center text-white/70 mb-4">
+                {weatherData.location.name}, {weatherData.location.country}
+              </p>
+            </div>
             
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                  onClick={() => navigate('/profile')}
-                >
-                  {profile?.avatar_url ? (
-                    <img 
-                      src={profile.avatar_url} 
-                      alt={profile.username || user.email} 
-                      className="h-8 w-8 rounded-full"
-                    />
-                  ) : (
-                    <User size={18} />
-                  )}
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                  onClick={signOut}
-                >
-                  <LogOut size={18} />
-                </Button>
+            <div className="w-full max-w-lg mx-auto animate-slide-up" style={{ animationDelay: '0.4s' }}>
+              <WeatherCard weatherData={weatherData} />
+            </div>
+            
+            {/* Additional weather widgets */}
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <UVIndexWidget uvIndex={weatherData.current.uv} />
+              <MoonPhaseWidget 
+                moonPhase={moonPhase} 
+                moonIllumination={moonIllumination}
+                moonriseTime={moonriseTime}
+                moonsetTime={moonsetTime}
+              />
+              <AirQualityWidget 
+                airQuality={weatherData.airQuality!}
+              />
+              <PrayerTimesWidget 
+                prayerTimes={weatherData.prayerTimes!}
+              />
+            </div>
+            
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
+              <PrecipitationWidget 
+                precipitationData={precipitationData}
+                hourlyForecast={hourlyForecasts}
+              />
+              <WindMapWidget 
+                windSpeed={weatherData.current.wind_kph} 
+                windDirection={weatherData.current.wind_dir}
+                hourlyForecast={hourlyForecasts.map(hour => ({
+                  time: hour.time,
+                  wind_kph: hour.wind_kph || 0,
+                  wind_dir: hour.wind_dir || 'N'
+                }))}
+              />
+            </div>
+            
+            {/* Forecast preview */}
+            {weatherData.forecast && (
+              <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+                {weatherData.forecast.forecastday.slice(0, 3).map((day) => (
+                  <div key={day.date} className="frost-panel p-4 rounded-2xl hover-lift transition-all">
+                    <div className="text-white text-center mb-2">{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
+                    <div className="flex items-center justify-center">
+                      <img 
+                        src={day.day.condition.icon.replace('64x64', '128x128')} 
+                        alt={day.day.condition.text} 
+                        className="w-12 h-12"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="flex justify-center gap-4 text-white mt-2">
+                      <span className="font-medium">{Math.round(day.day.maxtemp_c)}°</span>
+                      <span className="text-white/60">{Math.round(day.day.mintemp_c)}°</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
+            )}
+            
+            {/* Learn more about this location button */}
+            <div className="w-full text-center mt-4 animate-fade-in" style={{ animationDelay: '0.9s' }}>
               <Button 
                 variant="ghost" 
-                size="sm"
-                className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                onClick={() => navigate('/auth')}
+                onClick={scrollToLocationInfo} 
+                className="text-white bg-white/10 hover:bg-white/20 gap-2 group"
               >
-                <LogIn size={18} className="mr-2" />
-                Login
+                <span>Explore {weatherData.location.name}</span>
+                <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
               </Button>
-            )}
-          </div>
-        </header>
-        
-        {/* Main content area */}
-        <main className="flex-1 flex flex-col items-center justify-center gap-6">
-          <div className="w-full animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <TimeDisplay className="mb-4" />
-            
-            {/* Centered greeting with username from profile if available */}
-            <h2 className="text-3xl text-center font-light text-white frosted-text mb-1">
-              {greeting}
-              {user && profile?.username && (
-                <span className="font-normal">, {profile.username}</span>
-              )}
-            </h2>
-            
-            <p className="text-center text-white/70 mb-4">
-              {weatherData.location.name}, {weatherData.location.country}
-            </p>
-          </div>
-          
-          <div className="w-full max-w-lg mx-auto animate-slide-up" style={{ animationDelay: '0.4s' }}>
-            <WeatherCard weatherData={weatherData} />
-          </div>
-          
-          {/* Additional weather widgets */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-            <UVIndexWidget uvIndex={weatherData.current.uv} />
-            <MoonPhaseWidget 
-              moonPhase={moonPhase} 
-              moonIllumination={moonIllumination}
-              moonriseTime={moonriseTime}
-              moonsetTime={moonsetTime}
-            />
-            <PrecipitationWidget 
-              precipitationData={precipitationData}
-              hourlyForecast={hourlyForecasts}
-            />
-            <WindMapWidget 
-              windSpeed={weatherData.current.wind_kph} 
-              windDirection={weatherData.current.wind_dir}
-              hourlyForecast={hourlyForecasts.map(hour => ({
-                time: hour.time,
-                wind_kph: hour.wind_kph || 0,
-                wind_dir: hour.wind_dir || 'N'
-              }))}
-            />
-          </div>
-          
-          {/* Forecast preview */}
-          {weatherData.forecast && (
-            <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
-              {weatherData.forecast.forecastday.slice(0, 3).map((day) => (
-                <div key={day.date} className="frost-panel p-4 rounded-2xl hover-lift transition-all">
-                  <div className="text-white text-center mb-2">{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
-                  <div className="flex items-center justify-center">
-                    <img 
-                      src={day.day.condition.icon.replace('64x64', '128x128')} 
-                      alt={day.day.condition.text} 
-                      className="w-12 h-12"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="flex justify-center gap-4 text-white mt-2">
-                    <span className="font-medium">{Math.round(day.day.maxtemp_c)}°</span>
-                    <span className="text-white/60">{Math.round(day.day.mintemp_c)}°</span>
-                  </div>
-                </div>
-              ))}
             </div>
-          )}
-        </main>
+          </main>
+          
+          {/* Footer with Powered by Pineapple and copyright */}
+          <footer className="text-center mt-8 animate-fade-in" style={{ animationDelay: '1s' }}>
+            <p className="text-white/40 text-xs mb-1">Data provided by WeatherAPI.com</p>
+            <p className="text-white/30 text-[10px] mb-1">Powered by Pineapple</p>
+            <p className="text-white/40 text-xs">© 2025 Climate Vision. All rights reserved.</p>
+          </footer>
+        </div>
         
-        {/* Footer with Powered by Pineapple and copyright */}
-        <footer className="text-center mt-8 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-          <p className="text-white/40 text-xs mb-1">Data provided by WeatherAPI.com</p>
-          <p className="text-white/30 text-[10px] mb-1">Powered by Pineapple</p>
-          <p className="text-white/40 text-xs">© 2025 Climate Vision. All rights reserved.</p>
-        </footer>
+        {/* Location info section (scrollable) */}
+        <div ref={locationInfoRef}>
+          {weatherData.locationInfo && (
+            <LocationInfo locationData={weatherData.locationInfo} />
+          )}
+        </div>
       </div>
     </WeatherBackground>
   );
