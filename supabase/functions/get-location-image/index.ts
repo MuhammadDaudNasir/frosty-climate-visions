@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const PIXABAY_API_KEY = "19323886-b5b243545561a113e15589139";
+const PIXABAY_API_KEY = Deno.env.get("PIXABAY_API_KEY") || "19323886-b5b243545561a113e15589139";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -1,2 +1,5 @@
 
 project_id = "foogqtbkxpimonkhjhul"
+
+[get-location-image.env]
+PIXABAY_API_KEY = "19323886-b5b243545561a113e15589139"
