@@ -59,7 +59,7 @@
 
   /* Scrollbar customization */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -76,17 +76,17 @@
     background: rgba(255, 255, 255, 0.3);
   }
   
-  /* Custom classes for frost effect */
+  /* Custom classes for frost effect - Apple style */
   .frost-glass {
-    @apply backdrop-blur-xl bg-white/10 border border-white/10 shadow-md;
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg;
   }
   
   .frost-glass-dark {
-    @apply backdrop-blur-xl bg-black/40 border border-white/10 shadow-md;
+    @apply backdrop-blur-xl bg-black/30 border border-white/10 shadow-lg;
   }
 
   .frost-panel {
-    @apply backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-md transition-all duration-300;
+    @apply backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-lg transition-all duration-300;
   }
 
   .frosted-text {
@@ -94,18 +94,18 @@
   }
 }
 
-/* Animation and transition classes */
+/* Animation and transition classes - Apple-inspired */
 .weather-transition {
   transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Add blur-in animation for dropdowns */
@@ -115,19 +115,19 @@
     background-color: rgba(0, 0, 0, 0);
   }
   to {
-    backdrop-filter: blur(10px);
-    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
+    background-color: rgba(0, 0, 0, 0.3);
   }
 }
 
 .animate-blur-in {
-  animation: blurIn 0.3s ease-out forwards;
+  animation: blurIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* Apple-style animations */
 @keyframes scaleReveal {
   0% {
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0;
   }
   100% {
@@ -182,6 +182,18 @@
   }
 }
 
+@keyframes floatElement {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
 .animate-scale-reveal {
   animation: scaleReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
@@ -204,29 +216,33 @@
   animation: shimmer 2s infinite;
 }
 
-/* Weather background gradients */
+.animate-float {
+  animation: floatElement 3s ease-in-out infinite;
+}
+
+/* Weather background gradients - more vibrant Apple-like */
 .bg-clear-day {
-  background: linear-gradient(to bottom, #4da0ff 0%, #a8d5ff 100%);
+  background: linear-gradient(to bottom, #1a91ff 0%, #78c6ff 100%);
 }
 
 .bg-clear-night {
-  background: linear-gradient(to bottom, #1a2a3a 0%, #2c3e50 100%);
+  background: linear-gradient(to bottom, #0a1a30 0%, #1c3b63 100%);
 }
 
 .bg-cloudy {
-  background: linear-gradient(to bottom, #5d6973 0%, #adb5bd 100%);
+  background: linear-gradient(to bottom, #54636e 0%, #a4adb5 100%);
 }
 
 .bg-rainy {
-  background: linear-gradient(to bottom, #4a5568 0%, #718096 100%);
+  background: linear-gradient(to bottom, #3a4a59 0%, #6a8191 100%);
 }
 
 .bg-snowy {
-  background: linear-gradient(to bottom, #b3b3b3 0%, #e6e6e6 100%);
+  background: linear-gradient(to bottom, #a3a3a3 0%, #e0e0e0 100%);
 }
 
 .bg-stormy {
-  background: linear-gradient(to bottom, #313131 0%, #535353 100%);
+  background: linear-gradient(to bottom, #292929 0%, #494949 100%);
 }
 
 /* Animated background pattern for cards */
@@ -256,7 +272,7 @@
 .dialog-animation-enter-active {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 300ms, transform 300ms;
+  transition: opacity 300ms, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dialog-animation-exit {
@@ -267,20 +283,38 @@
 .dialog-animation-exit-active {
   opacity: 0;
   transform: scale(0.95);
-  transition: opacity 300ms, transform 300ms;
+  transition: opacity 300ms, transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Custom animation for widget interactions */
 .widget-hover-animation {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .widget-hover-animation:hover {
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 /* Parallax effect for background elements */
 .parallax {
   transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
   will-change: transform;
+}
+
+/* Apple-style card */
+.apple-card {
+  @apply backdrop-blur-2xl bg-white/10 border border-white/20 rounded-3xl shadow-lg;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.apple-card:hover {
+  @apply bg-white/15;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Apple-style buttons */
+.apple-button {
+  @apply bg-white/15 text-white rounded-full py-2 px-5 hover:bg-white/25 transition-all;
+  backdrop-filter: blur(5px);
 }

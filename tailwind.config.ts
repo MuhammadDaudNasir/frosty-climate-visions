@@ -20,7 +20,7 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				poppins: ["Poppins", "sans-serif"],
+				poppins: ["Inter", "system-ui", "sans-serif"],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -76,7 +76,9 @@ export default {
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'3xl': '1.5rem',
+				'4xl': '2rem'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -141,8 +143,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.5s ease-out',
 				'fade-out': 'fade-out 0.5s ease-out',
-				'slide-up': 'slide-up 0.6s ease-out',
-				'slide-down': 'slide-down 0.6s ease-out',
+				'slide-up': 'slide-up 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
+				'slide-down': 'slide-down 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
 				'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
 				'float': 'float 6s ease-in-out infinite',
 				'rotate-sun': 'rotate-sun 25s linear infinite',
