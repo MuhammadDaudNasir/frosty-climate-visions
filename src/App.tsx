@@ -23,6 +23,15 @@ import "@fontsource/inter/700.css";
 import "@fontsource/inter/800.css";
 import "@fontsource/inter/900.css";
 
+// Add 'stormy' to the WeatherCondition type
+declare module '@/components/WeatherBackground' {
+  export interface WeatherBackgroundProps {
+    condition: 'clear' | 'cloudy' | 'rain' | 'snow' | 'stormy' | 'fog';
+    isDay?: boolean;
+    children: React.ReactNode;
+  }
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
