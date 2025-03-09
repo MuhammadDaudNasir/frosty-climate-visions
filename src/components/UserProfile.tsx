@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, UserPreferences } from '@/contexts/AuthContext';
 import { 
   User, Settings, LogOut, Loader2, CheckCircle, Camera, 
-  Sun, Moon, Droplets, Wind, MapPin, ThermometerSnow
+  Sun, Moon, Droplets, Wind, MapPin, ThermometerSun
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +24,6 @@ const UserProfile: React.FC = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(profile?.avatar_url || null);
   
-  // Preferences state
   const [tempPreferences, setTempPreferences] = useState<UserPreferences>(
     profile?.preferences || {
       unit: 'metric',
@@ -54,7 +52,6 @@ const UserProfile: React.FC = () => {
     if (file) {
       setAvatarFile(file);
       
-      // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
@@ -68,7 +65,6 @@ const UserProfile: React.FC = () => {
     
     setIsLoading(true);
     try {
-      // Upload avatar if changed
       let avatarUrl = profile?.avatar_url;
       
       if (avatarFile) {
@@ -84,7 +80,6 @@ const UserProfile: React.FC = () => {
         avatarUrl = `${(supabase.storage.from('avatars').getPublicUrl(fileName)).data.publicUrl}`;
       }
       
-      // Update profile
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
@@ -223,7 +218,7 @@ const UserProfile: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-3">
             <h4 className="text-white text-sm font-medium flex items-center">
-              <ThermometerSnow className="h-4 w-4 mr-2" />
+              <ThermometerSun className="h-4 w-4 mr-2" />
               Temperature Unit
             </h4>
             <RadioGroup 
@@ -381,7 +376,7 @@ const UserProfile: React.FC = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center p-3 bg-white/5 rounded-xl">
               <div className="flex items-center">
-                <ThermometerSnow className="h-4 w-4 mr-2 text-white/70" />
+                <ThermometerSun className="h-4 w-4 mr-2 text-white/70" />
                 <span className="text-white">Temperature Unit</span>
               </div>
               <div className="text-white/80 bg-white/10 px-3 py-1 rounded-full text-sm">

@@ -1,4 +1,3 @@
-
 export type WeatherCondition = 
   | 'sunny' 
   | 'clear' 
@@ -11,7 +10,8 @@ export type WeatherCondition =
   | 'drizzle' 
   | 'snow' 
   | 'sleet' 
-  | 'thunderstorm';
+  | 'thunderstorm'
+  | 'stormy';
 
 export type TimeOfDay = 'day' | 'night';
 

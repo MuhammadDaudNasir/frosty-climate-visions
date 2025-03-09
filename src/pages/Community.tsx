@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +17,6 @@ const Community: React.FC = () => {
   const { weatherData, location } = useWeather();
   const [activeTab, setActiveTab] = useState('reports');
   
-  // If the weather data is still loading, use default coordinates
   const latitude = weatherData?.location?.lat || 37.7749;
   const longitude = weatherData?.location?.lon || -122.4194;
 
@@ -37,7 +35,7 @@ const Community: React.FC = () => {
     } else if (condition.includes('snow')) {
       return 'snow';
     } else if (condition.includes('thunder') || condition.includes('storm')) {
-      return 'stormy' as 'clear' | 'cloudy' | 'rain' | 'snow' | 'stormy' | 'fog';
+      return 'stormy';
     }
     
     return 'clear';

@@ -94,7 +94,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
       }
 
-      setProfile(data as UserProfile);
+      // Cast the data to UserProfile type after ensuring preferences has the right structure
+      setProfile({
+        id: data.id,
+        username: data.username,
+        avatar_url: data.avatar_url,
+        updated_at: data.updated_at,
+        created_at: data.created_at,
+        favorite_locations: data.favorite_locations,
+        preferences: data.preferences as UserPreferences
+      });
     } catch (error: any) {
       console.error('Error fetching profile:', error.message);
     } finally {
