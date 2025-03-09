@@ -9,12 +9,52 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      local_weather_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          description: string
+          expires_at: string
+          id: string
+          latitude: number
+          location_name: string
+          longitude: number
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          description: string
+          expires_at?: string
+          id?: string
+          latitude: number
+          location_name: string
+          longitude: number
+          severity: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          description?: string
+          expires_at?: string
+          id?: string
+          latitude?: number
+          location_name?: string
+          longitude?: number
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
           favorite_locations: string[] | null
           id: string
+          preferences: Json | null
           updated_at: string
           username: string | null
         }
@@ -23,6 +63,7 @@ export type Database = {
           created_at?: string
           favorite_locations?: string[] | null
           id: string
+          preferences?: Json | null
           updated_at?: string
           username?: string | null
         }
@@ -31,6 +72,7 @@ export type Database = {
           created_at?: string
           favorite_locations?: string[] | null
           id?: string
+          preferences?: Json | null
           updated_at?: string
           username?: string | null
         }
@@ -53,6 +95,78 @@ export type Database = {
           created_at?: string
           id?: string
           location_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_weather_reports: {
+        Row: {
+          condition: string
+          created_at: string
+          description: string
+          expires_at: string
+          id: string
+          intensity: string | null
+          latitude: number
+          location_name: string
+          longitude: number
+          user_id: string
+        }
+        Insert: {
+          condition: string
+          created_at?: string
+          description: string
+          expires_at?: string
+          id?: string
+          intensity?: string | null
+          latitude: number
+          location_name: string
+          longitude: number
+          user_id: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          description?: string
+          expires_at?: string
+          id?: string
+          intensity?: string | null
+          latitude?: number
+          location_name?: string
+          longitude?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weather_accuracy_ratings: {
+        Row: {
+          comments: string | null
+          created_at: string
+          id: string
+          is_accurate: boolean
+          latitude: number
+          location_name: string
+          longitude: number
+          user_id: string
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          is_accurate: boolean
+          latitude: number
+          location_name: string
+          longitude: number
+          user_id: string
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          id?: string
+          is_accurate?: boolean
+          latitude?: number
+          location_name?: string
+          longitude?: number
           user_id?: string
         }
         Relationships: []
