@@ -2,7 +2,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
-	darkMode: ["class", ".dark-mode"],
+	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
@@ -78,9 +78,7 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)',
 				'3xl': '1.5rem',
-				'4xl': '2rem',
-				'5xl': '2.5rem',
-				'pill': '9999px'
+				'4xl': '2rem'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -135,14 +133,10 @@ export default {
 					'0%': { transform: 'translateY(0)', opacity: '1' },
 					'100%': { transform: 'translateY(20px)', opacity: '0' }
 				},
-				'blur-in': {
-					'0%': { backdropFilter: 'blur(0px)', backgroundColor: 'rgba(255, 255, 255, 0)' },
-					'100%': { backdropFilter: 'blur(20px)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }
-				},
-				'scale-up': {
-					'0%': { transform: 'scale(0.95)', opacity: '0' },
-					'100%': { transform: 'scale(1)', opacity: '1' }
-				}
+                'blur-in': {
+                    '0%': { backdropFilter: 'blur(0px)', backgroundColor: 'rgba(255, 255, 255, 0)' },
+                    '100%': { backdropFilter: 'blur(20px)', backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -156,8 +150,7 @@ export default {
 				'rotate-sun': 'rotate-sun 25s linear infinite',
 				'drift-cloud': 'drift-cloud 10s ease-in-out infinite alternate',
 				'rain-drop': 'rain-drop 1.5s ease-in infinite',
-				'blur-in': 'blur-in 0.5s ease-out forwards',
-				'scale-up': 'scale-up 0.3s cubic-bezier(0.22, 1, 0.36, 1)'
+                'blur-in': 'blur-in 0.5s ease-out forwards'
 			}
 		}
 	},
