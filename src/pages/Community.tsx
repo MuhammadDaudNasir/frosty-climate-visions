@@ -37,7 +37,7 @@ const Community: React.FC = () => {
     } else if (condition.includes('snow')) {
       return 'snow';
     } else if (condition.includes('thunder') || condition.includes('storm')) {
-      return 'stormy';
+      return 'stormy' as 'clear' | 'cloudy' | 'rain' | 'snow' | 'stormy' | 'fog';
     }
     
     return 'clear';
