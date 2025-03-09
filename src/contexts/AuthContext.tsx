@@ -13,7 +13,23 @@ interface AuthContextProps {
   signUp: (email: string, password: string, username?: string) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  updateUserPreferences: (preferences: UserPreferences) => Promise<void>;
+  userPreferences: UserPreferences;
 }
+
+export interface UserPreferences {
+  units: 'metric' | 'imperial';
+  windSpeedFormat: 'km/h' | 'mph' | 'm/s';
+  darkMode: boolean;
+  notificationsEnabled: boolean;
+}
+
+const defaultPreferences: UserPreferences = {
+  units: 'metric',
+  windSpeedFormat: 'km/h',
+  darkMode: false,
+  notificationsEnabled: true
+};
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
@@ -22,6 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>(defaultPreferences);
 
   useEffect(() => {
     // Get initial session
@@ -37,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -44,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await fetchProfile(session.user.id);
       } else {
         setProfile(null);
+        setUserPreferences(defaultPreferences);
         setIsLoading(false);
       }
     });
@@ -66,10 +85,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       setProfile(data);
+      // Load user preferences if available
+      if (data?.preferences) {
+        setUserPreferences({
+          ...defaultPreferences,
+          ...data.preferences
+        });
+      }
     } catch (error: any) {
       console.error('Error fetching profile:', error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const updateUserPreferences = async (preferences: UserPreferences) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          preferences: preferences,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setUserPreferences(preferences);
+      toast({
+        title: "Preferences updated",
+        description: "Your preferences have been saved successfully"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to update preferences",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
@@ -127,17 +181,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
+      // Fix: Use the correct signOut method without parameters
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         throw error;
       }
       
+      // Clear any local state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setUserPreferences(defaultPreferences);
+      
       toast({
         title: "Signed out",
         description: "You have been signed out successfully",
       });
     } catch (error: any) {
+      console.error("Sign out error:", error);
       toast({
         title: "Sign out failed",
         description: error.message,
@@ -175,7 +237,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     signIn,
     signUp,
     signOut,
-    signInWithGoogle
+    signInWithGoogle,
+    updateUserPreferences,
+    userPreferences
   };
 
   return (

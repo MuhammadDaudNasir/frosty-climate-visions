@@ -3,13 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Import SF Pro-inspired font (Google Font: Inter)
 import "@fontsource/inter/100.css";
@@ -31,9 +32,25 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+// Theme provider to handle dark mode
+const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const { userPreferences } = useAuth();
+  
+  useEffect(() => {
+    // Apply dark or light mode based on user preference
+    if (userPreferences.darkMode) {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  }, [userPreferences.darkMode]);
+  
+  return <>{children}</>;
+};
+
+const AppContent = () => {
+  return (
+    <ThemeProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -48,6 +65,14 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+    </ThemeProvider>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   </QueryClientProvider>
 );

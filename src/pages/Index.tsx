@@ -1,344 +1,182 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import WeatherBackground from '@/components/WeatherBackground';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useWeather } from '@/hooks/useWeather';
 import WeatherCard from '@/components/WeatherCard';
-import TimeDisplay from '@/components/TimeDisplay';
+import AnimatedWeatherBackground from '@/components/AnimatedWeatherBackground';
 import EnhancedLocationSelector from '@/components/EnhancedLocationSelector';
-import MoonPhaseWidget from '@/components/MoonPhaseWidget';
-import PrecipitationWidget from '@/components/PrecipitationWidget';
-import UVIndexWidget from '@/components/UVIndexWidget';
-import WindMapWidget from '@/components/WindMapWidget';
-import AirQualityWidget from '@/components/AirQualityWidget';
-import PrayerTimesWidget from '@/components/PrayerTimesWidget';
-import LocationInfo from '@/components/LocationInfo';
 import SavedLocations from '@/components/SavedLocations';
-import { useWeather, ExtendedWeatherData } from '@/hooks/useWeather';
-import { getWeatherCondition } from '@/utils/weatherUtils';
+import TimeDisplay from '@/components/TimeDisplay';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, LogIn, LogOut, User, ChevronDown } from 'lucide-react';
+import { 
+  User, 
+  Loader2,
+  MapPin,
+  Compass,
+  Bell
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 
-const Index = () => {
-  const { weatherData, loading, error, location, changeLocation } = useWeather();
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [showLocationInfo, setShowLocationInfo] = useState(false);
-  const { user, profile, signOut } = useAuth();
-  const navigate = useNavigate();
-  const locationInfoRef = useRef<HTMLDivElement>(null);
+const Index: React.FC = () => {
+  const { user, isLoading: authLoading } = useAuth();
+  const { latitude, longitude, error: geoError, loading: geoLoading } = useGeolocation();
+  const [shouldUseGeolocation, setShouldUseGeolocation] = useState<boolean>(true);
   
-  useEffect(() => {
-    if (weatherData) {
-      setIsInitialLoad(false);
+  // Get the last location from localStorage, or default to San Francisco
+  const getInitialLocation = () => {
+    if (shouldUseGeolocation && latitude && longitude) {
+      return `${latitude},${longitude}`;
     }
-  }, [weatherData]);
+    return localStorage.getItem('lastLocation') || 'San Francisco';
+  };
   
-  // Add scroll listener to show/hide location info
+  const { 
+    weatherData, 
+    loading: weatherLoading, 
+    error: weatherError, 
+    location, 
+    changeLocation,
+    refreshWeather
+  } = useWeather(getInitialLocation());
+  
+  // Timer for auto-refreshing weather data
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const threshold = window.innerHeight * 0.2;
-      
-      if (scrollPosition > threshold && !showLocationInfo) {
-        setShowLocationInfo(true);
-      } else if (scrollPosition <= threshold && showLocationInfo) {
-        setShowLocationInfo(false);
-      }
-    };
+    const timer = setInterval(() => {
+      refreshWeather();
+    }, 60000); // Refresh every minute
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [showLocationInfo]);
+    return () => clearInterval(timer);
+  }, [refreshWeather]);
   
-  // Scroll to location info section
-  const scrollToLocationInfo = () => {
-    if (locationInfoRef.current) {
-      locationInfoRef.current.scrollIntoView({ behavior: 'smooth' });
+  // Use geolocation when available
+  useEffect(() => {
+    if (shouldUseGeolocation && latitude && longitude && !geoLoading) {
+      changeLocation(`${latitude},${longitude}`);
+    } else if (geoError && !geoLoading) {
+      // If error in geolocation, fallback to last location and show toast
+      setShouldUseGeolocation(false);
+      if (geoError === 'User denied Geolocation') {
+        toast({
+          title: "Location access denied",
+          description: "We're showing your last saved location instead",
+        });
+      }
+    }
+  }, [latitude, longitude, geoLoading, geoError, shouldUseGeolocation, changeLocation]);
+  
+  // When location changes, save to localStorage
+  useEffect(() => {
+    if (location && !weatherLoading && !weatherError) {
+      localStorage.setItem('lastLocation', location);
+    }
+  }, [location, weatherLoading, weatherError]);
+  
+  const handleLocationChange = (newLocation: string) => {
+    setShouldUseGeolocation(false);
+    changeLocation(newLocation);
+  };
+
+  const handleUseMyLocation = () => {
+    if (navigator.geolocation) {
+      setShouldUseGeolocation(true);
+      toast({
+        title: "Locating you",
+        description: "Fetching your current location weather...",
+      });
+    } else {
+      toast({
+        title: "Location unavailable",
+        description: "Your browser doesn't support geolocation",
+        variant: "destructive"
+      });
     }
   };
   
-  // Early return for initial loading state with nice loading animation
-  if (isInitialLoad) {
+  const isLoading = weatherLoading || (geoLoading && shouldUseGeolocation);
+  const weatherCondition = weatherData?.current?.condition?.text?.toLowerCase() || 'clear';
+  const isDay = weatherData?.current?.is_day === 1;
+  
+  // While weather data is loading, show loader
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-black">
-        <div className="animate-pulse-subtle">
-          <div className="text-white text-2xl mb-6 font-light">Climate Vision</div>
-          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto" />
-          <div className="text-white/60 text-sm mt-6">Loading weather data...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
+        <div className="text-center">
+          <Loader2 className="w-16 h-16 text-blue-400 animate-spin mx-auto" />
+          <p className="mt-4 text-white text-lg">Loading weather data...</p>
         </div>
       </div>
     );
   }
   
-  // Safeguard for when weather data is not yet available
-  if (!weatherData) {
-    return null;
-  }
-  
-  const weatherCondition = getWeatherCondition(weatherData.current.condition.code);
-  const isDay = weatherData.current.is_day === 1;
-  
-  // Calculate appropriate greeting based on the time
-  const currentHour = new Date(weatherData.location.localtime).getHours();
-  let greeting = "Good morning";
-  if (currentHour >= 12 && currentHour < 18) {
-    greeting = "Good afternoon";
-  } else if (currentHour >= 18) {
-    greeting = "Good evening";
-  }
-
-  // Calculate precipitation data
-  const getPrecipitationData = (data: ExtendedWeatherData) => {
-    const currentHour = new Date(data.location.localtime).getHours();
-    const hourlyData = data.hourlyForecast?.[currentHour];
-    
-    if (!hourlyData) {
-      return { chance: 0, amount: 0, type: 'none' as const };
-    }
-    
-    const willRain = hourlyData.will_it_rain === 1;
-    const willSnow = hourlyData.will_it_snow === 1;
-    const chanceOfRain = hourlyData.chance_of_rain;
-    const chanceOfSnow = hourlyData.chance_of_snow;
-    
-    return {
-      chance: Math.max(chanceOfRain, chanceOfSnow),
-      amount: hourlyData.precip_mm,
-      type: willSnow ? 'snow' as const : willRain ? 'rain' as const : 'none' as const
-    };
-  };
-
-  // Get moon phase data
-  const getMoonPhaseData = (data: ExtendedWeatherData) => {
-    if (!data.astronomy?.astro) {
-      return { 
-        phase: 0, 
-        illumination: 0,
-        moonrise: '',
-        moonset: ''
-      };
-    }
-    
-    const moonPhaseText = data.astronomy.astro.moon_phase;
-    const moonIllumination = parseInt(data.astronomy.astro.moon_illumination, 10) / 100;
-    const moonrise = data.astronomy.astro.moonrise;
-    const moonset = data.astronomy.astro.moonset;
-    
-    // Convert text moon phase to numeric value (0-1)
-    let phase = 0;
-    if (moonPhaseText === "New Moon") phase = 0;
-    else if (moonPhaseText === "Waxing Crescent") phase = 0.125;
-    else if (moonPhaseText === "First Quarter") phase = 0.25;
-    else if (moonPhaseText === "Waxing Gibbous") phase = 0.375;
-    else if (moonPhaseText === "Full Moon") phase = 0.5;
-    else if (moonPhaseText === "Waning Gibbous") phase = 0.625;
-    else if (moonPhaseText === "Last Quarter") phase = 0.75;
-    else if (moonPhaseText === "Waning Crescent") phase = 0.875;
-    
-    return { 
-      phase, 
-      illumination: moonIllumination,
-      moonrise,
-      moonset
-    };
-  };
-
-  const precipitationData = getPrecipitationData(weatherData);
-  const { 
-    phase: moonPhase, 
-    illumination: moonIllumination,
-    moonrise: moonriseTime,
-    moonset: moonsetTime
-  } = getMoonPhaseData(weatherData);
-  
-  // Get hourly forecasts for widgets
-  const getHourlyForecasts = () => {
-    if (!weatherData.hourlyForecast) return [];
-    
-    const now = new Date();
-    const currentHour = now.getHours();
-    
-    return weatherData.hourlyForecast.filter(hour => {
-      const hourTime = new Date(hour.time);
-      return hourTime.getHours() >= currentHour;
-    });
-  };
-  
-  const hourlyForecasts = getHourlyForecasts();
-
   return (
-    <WeatherBackground condition={weatherCondition} isDay={isDay}>
+    <AnimatedWeatherBackground condition={weatherCondition} isDay={isDay}>
       <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8 flex flex-col max-w-4xl">
-          {/* Header section with location and time */}
-          <header className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 animate-slide-down">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-light text-white frosted-text">Climate Vision</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <EnhancedLocationSelector 
-                currentLocation={location} 
-                onLocationChange={changeLocation} 
-              />
-              
-              {user ? (
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                    onClick={() => navigate('/profile')}
-                  >
-                    {profile?.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
-                        alt={profile.username || user.email} 
-                        className="h-8 w-8 rounded-full"
-                      />
-                    ) : (
-                      <User size={18} />
-                    )}
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                    onClick={signOut}
-                  >
-                    <LogOut size={18} />
-                  </Button>
-                </div>
-              ) : (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="rounded-full bg-white/10 hover:bg-white/20 text-white"
-                  onClick={() => navigate('/auth')}
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <header className="flex justify-between items-center mb-8">
+            <div className="flex items-center space-x-3">
+              <Link 
+                to={user ? "/profile" : "/auth"} 
+                className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-all"
+              >
+                <User size={20} className="text-white" />
+              </Link>
+              {user && (
+                <Link 
+                  to="/alerts" 
+                  className="rounded-full bg-white/10 hover:bg-white/20 p-2 transition-all"
                 >
-                  <LogIn size={18} className="mr-2" />
-                  Login
-                </Button>
+                  <Bell size={20} className="text-white" />
+                </Link>
               )}
+            </div>
+            
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleUseMyLocation}
+                className="rounded-full bg-white/10 hover:bg-white/20 text-white"
+                disabled={shouldUseGeolocation && geoLoading}
+              >
+                {shouldUseGeolocation && geoLoading ? (
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                ) : (
+                  <Compass size={16} className="mr-2" />
+                )}
+                My Location
+              </Button>
+              
+              <EnhancedLocationSelector 
+                currentLocation={location}
+                onLocationChange={handleLocationChange}
+              />
             </div>
           </header>
           
-          {/* Main content area */}
-          <main className="flex-1 flex flex-col items-center justify-center gap-6">
-            <div className="w-full animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <TimeDisplay className="mb-4" />
-              
-              {/* Centered greeting with username from profile if available */}
-              <h2 className="text-3xl text-center font-light text-white frosted-text mb-1">
-                {greeting}
-                {user && profile?.username && (
-                  <span className="font-normal">, {profile.username}</span>
-                )}
-              </h2>
-              
-              <p className="text-center text-white/70 mb-4">
-                {weatherData.location.name}, {weatherData.location.country}
-              </p>
-            </div>
-            
-            {/* Saved locations section (only visible when logged in) */}
-            {user && (
-              <div className="w-full max-w-lg mx-auto mb-2" style={{ animationDelay: '0.3s' }}>
-                <SavedLocations 
-                  currentLocation={location} 
-                  onLocationSelect={changeLocation} 
-                />
-              </div>
-            )}
-            
-            <div className="w-full max-w-lg mx-auto animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              <WeatherCard weatherData={weatherData} />
-            </div>
-            
-            {/* Additional weather widgets */}
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
-              <UVIndexWidget uvIndex={weatherData.current.uv} />
-              <MoonPhaseWidget 
-                moonPhase={moonPhase} 
-                moonIllumination={moonIllumination}
-                moonriseTime={moonriseTime}
-                moonsetTime={moonsetTime}
-              />
-              <AirQualityWidget 
-                airQuality={weatherData.airQuality!}
-              />
-              <PrayerTimesWidget 
-                prayerTimes={weatherData.prayerTimes!}
-              />
-            </div>
-            
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
-              <PrecipitationWidget 
-                precipitationData={precipitationData}
-                hourlyForecast={hourlyForecasts}
-              />
-              <WindMapWidget 
-                windSpeed={weatherData.current.wind_kph} 
-                windDirection={weatherData.current.wind_dir}
-                hourlyForecast={hourlyForecasts.map(hour => ({
-                  time: hour.time,
-                  wind_kph: hour.wind_kph || 0,
-                  wind_dir: hour.wind_dir || 'N'
-                }))}
-              />
-            </div>
-            
-            {/* Forecast preview */}
-            {weatherData.forecast && (
-              <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-                {weatherData.forecast.forecastday.slice(0, 3).map((day) => (
-                  <div key={day.date} className="frost-panel p-4 rounded-2xl hover-lift transition-all">
-                    <div className="text-white text-center mb-2">{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
-                    <div className="flex items-center justify-center">
-                      <img 
-                        src={day.day.condition.icon.replace('64x64', '128x128')} 
-                        alt={day.day.condition.text} 
-                        className="w-12 h-12"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div className="flex justify-center gap-4 text-white mt-2">
-                      <span className="font-medium">{Math.round(day.day.maxtemp_c)}°</span>
-                      <span className="text-white/60">{Math.round(day.day.mintemp_c)}°</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Learn more about this location button */}
-            <div className="w-full text-center mt-4 animate-fade-in" style={{ animationDelay: '0.9s' }}>
-              <Button 
-                variant="ghost" 
-                onClick={scrollToLocationInfo} 
-                className="text-white bg-white/10 hover:bg-white/20 gap-2 group"
-              >
-                <span>Explore {weatherData.location.name}</span>
-                <ChevronDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
-              </Button>
-            </div>
-          </main>
+          <TimeDisplay 
+            timezone={weatherData?.location?.tz_id}
+            localtime={weatherData?.location?.localtime}
+          />
           
-          {/* Footer with Powered by Pineapple and copyright */}
-          <footer className="text-center mt-8 animate-fade-in" style={{ animationDelay: '1s' }}>
-            <p className="text-white/40 text-xs mb-1">Data provided by WeatherAPI.com</p>
-            <p className="text-white/30 text-[10px] mb-1">Powered by Pineapple</p>
-            <p className="text-white/40 text-xs">© 2025 Climate Vision. All rights reserved.</p>
-          </footer>
-        </div>
-        
-        {/* Location info section (scrollable) */}
-        <div ref={locationInfoRef}>
-          {weatherData.locationInfo && (
-            <LocationInfo locationData={weatherData.locationInfo} />
+          {/* Conditional render for saved locations */}
+          {user && (
+            <div className="mb-8">
+              <SavedLocations 
+                currentLocation={location} 
+                onLocationSelect={handleLocationChange}
+              />
+            </div>
           )}
+          
+          {/* Main Weather Data */}
+          <div>
+            <WeatherCard weatherData={weatherData} />
+          </div>
         </div>
       </div>
-    </WeatherBackground>
+    </AnimatedWeatherBackground>
   );
 };
 

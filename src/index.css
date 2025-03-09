@@ -52,6 +52,36 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  .dark-mode {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+
   body {
     @apply bg-background text-foreground font-poppins antialiased;
     overflow-x: hidden;
@@ -91,6 +121,19 @@
 
   .frosted-text {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Pill-shaped styles for Apple-like design */
+  .pill-button {
+    @apply rounded-full transition-all duration-300;
+  }
+  
+  .pill-card {
+    @apply rounded-3xl overflow-hidden transition-all duration-300;
+  }
+  
+  .pill-input {
+    @apply rounded-full border-2 focus:ring-2 focus:ring-offset-2 transition-all duration-300;
   }
 }
 
@@ -229,6 +272,14 @@
   background: linear-gradient(to bottom, #0a1a30 0%, #1c3b63 100%);
 }
 
+.bg-partly-cloudy-day {
+  background: linear-gradient(to bottom, #5d9cec 0%, #a0d2f7 100%);
+}
+
+.bg-partly-cloudy-night {
+  background: linear-gradient(to bottom, #172941 0%, #2c4a7a 100%);
+}
+
 .bg-cloudy {
   background: linear-gradient(to bottom, #54636e 0%, #a4adb5 100%);
 }
@@ -243,6 +294,39 @@
 
 .bg-stormy {
   background: linear-gradient(to bottom, #292929 0%, #494949 100%);
+}
+
+/* Dark mode versions of the weather backgrounds */
+.dark-bg-clear-day {
+  background: linear-gradient(to bottom, #0a3b70 0%, #1a5ba0 100%);
+}
+
+.dark-bg-clear-night {
+  background: linear-gradient(to bottom, #051020 0%, #0a1e3c 100%);
+}
+
+.dark-bg-partly-cloudy-day {
+  background: linear-gradient(to bottom, #2a4a70 0%, #4a6a8c 100%);
+}
+
+.dark-bg-partly-cloudy-night {
+  background: linear-gradient(to bottom, #0a1522 0%, #152540 100%);
+}
+
+.dark-bg-cloudy {
+  background: linear-gradient(to bottom, #2a3540 0%, #4a5a6a 100%);
+}
+
+.dark-bg-rainy {
+  background: linear-gradient(to bottom, #202a36 0%, #354555 100%);
+}
+
+.dark-bg-snowy {
+  background: linear-gradient(to bottom, #505050 0%, #707070 100%);
+}
+
+.dark-bg-stormy {
+  background: linear-gradient(to bottom, #1a1a1a 0%, #303030 100%);
 }
 
 /* Animated background pattern for cards */
@@ -317,4 +401,15 @@
 .apple-button {
   @apply bg-white/15 text-white rounded-full py-2 px-5 hover:bg-white/25 transition-all;
   backdrop-filter: blur(5px);
+}
+
+/* 3D transform effect for cards */
+.card-3d-effect {
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.card-3d-effect:hover {
+  transform: rotateX(5deg) rotateY(5deg);
 }
