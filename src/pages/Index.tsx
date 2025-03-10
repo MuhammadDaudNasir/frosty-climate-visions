@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WeatherBackground from '@/components/WeatherBackground';
@@ -13,6 +14,7 @@ import AirQualityWidget from '@/components/AirQualityWidget';
 import PrayerTimesWidget from '@/components/PrayerTimesWidget';
 import LocationInfo from '@/components/LocationInfo';
 import SavedLocations from '@/components/SavedLocations';
+import WeatherAlerts from '@/components/WeatherAlerts';
 import { useWeather, ExtendedWeatherData } from '@/hooks/useWeather';
 import { getWeatherCondition } from '@/utils/weatherUtils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -162,7 +164,7 @@ const Index = () => {
     
     return weatherData.forecast.forecastday.map(day => ({
       date: day.date,
-      uvIndex: day.day.uv,
+      uvIndex: day.day.uv || 0, // Added fallback to 0 if uv is undefined
       maxTemp: day.day.maxtemp_c,
       condition: day.day.condition.text,
       conditionIcon: day.day.condition.icon
@@ -266,9 +268,7 @@ const Index = () => {
               <AirQualityWidget 
                 airQuality={weatherData.airQuality!}
               />
-              <PrayerTimesWidget 
-                prayerTimes={weatherData.prayerTimes!}
-              />
+              <WeatherAlerts />
             </div>
             
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
@@ -287,11 +287,14 @@ const Index = () => {
               />
             </div>
             
-            {weeklyUVForecast.length > 0 && (
-              <div className="w-full animate-fade-in" style={{ animationDelay: '0.75s' }}>
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.75s' }}>
+              <PrayerTimesWidget 
+                prayerTimes={weatherData.prayerTimes!}
+              />
+              {weeklyUVForecast.length > 0 && (
                 <UVWeekForecast forecast={weeklyUVForecast} />
-              </div>
-            )}
+              )}
+            </div>
             
             {weatherData.forecast && (
               <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.8s' }}>

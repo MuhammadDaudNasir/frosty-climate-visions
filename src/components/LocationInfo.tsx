@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Compass, Wind, Cloud, Thermometer, MapPin, ImageIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
 
 interface LocationInfoProps {
   locationData: {
@@ -25,6 +25,7 @@ const LocationInfo: React.FC<LocationInfoProps> = ({ locationData }) => {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const fetchLocationImages = async () => {
@@ -32,11 +33,21 @@ const LocationInfo: React.FC<LocationInfoProps> = ({ locationData }) => {
       setImageLoadError(false);
       
       try {
+        console.log(`Fetching images for: ${locationData.name}, ${locationData.country}`);
+        
         const { data, error } = await supabase.functions.invoke('get-location-image', {
-          body: { location: `${locationData.name} ${locationData.country}` }
+          body: { 
+            location: `${locationData.name} ${locationData.country}`,
+            retry: retryCount
+          }
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase function error:', error);
+          throw error;
+        }
+        
+        console.log('Image API response:', data);
         
         if (data.images && data.images.length > 0) {
           setImages(data.images);
@@ -48,19 +59,28 @@ const LocationInfo: React.FC<LocationInfoProps> = ({ locationData }) => {
           });
         } else {
           setImageLoadError(true);
+          console.log('No images found in the response');
         }
       } catch (error) {
         console.error('Error fetching location images:', error);
         setImageLoadError(true);
+        toast({
+          title: "Image Load Error",
+          description: "Couldn't load location images. Click retry to try again.",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchLocationImages();
-  }, [locationData.name, locationData.country]);
+  }, [locationData.name, locationData.country, retryCount]);
 
-  // Change image every 10 seconds
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+  };
+
   useEffect(() => {
     if (images.length <= 1) return;
     
@@ -96,6 +116,13 @@ const LocationInfo: React.FC<LocationInfoProps> = ({ locationData }) => {
                 <p className="text-white/60 text-center">
                   No images available for this location
                 </p>
+                <Button 
+                  variant="outline" 
+                  onClick={handleRetry} 
+                  className="mt-4 bg-white/10 hover:bg-white/20 text-white"
+                >
+                  Retry
+                </Button>
               </div>
             ) : (
               <>
@@ -110,6 +137,19 @@ const LocationInfo: React.FC<LocationInfoProps> = ({ locationData }) => {
                       src={image.url}
                       alt={`${locationData.name}, ${locationData.country}`}
                       className="w-full h-full object-cover"
+                      onError={() => {
+                        // If an image fails to load, mark it as an error
+                        const newImages = [...images];
+                        newImages.splice(index, 1);
+                        if (newImages.length === 0) {
+                          setImageLoadError(true);
+                        } else {
+                          setImages(newImages);
+                          if (currentImageIndex >= newImages.length) {
+                            setCurrentImageIndex(0);
+                          }
+                        }
+                      }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-2 text-xs text-white/70">
                       Image by {image.credit} via Pixabay

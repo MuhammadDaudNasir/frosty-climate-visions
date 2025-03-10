@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { location } = await req.json();
+    const { location, retry = 0 } = await req.json();
     
     if (!location) {
       return new Response(
@@ -24,16 +24,29 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Searching for images of: ${location}`);
+    console.log(`Searching for images of: ${location} (retry: ${retry})`);
 
-    // Form a search query that's likely to get good results
-    // Add terms like cityscape, landscape, etc. to improve results
-    const searchQuery = encodeURIComponent(`${location} cityscape landscape travel tourism`);
+    // Form different search queries based on retry count to increase chances of success
+    let searchQuery;
+    if (retry > 0) {
+      // Try different query formations on retries
+      if (retry === 1) {
+        searchQuery = encodeURIComponent(`${location} city landscape`);
+      } else if (retry === 2) {
+        searchQuery = encodeURIComponent(`${location} tourism landmark`);
+      } else {
+        searchQuery = encodeURIComponent(`${location} travel`);
+      }
+    } else {
+      searchQuery = encodeURIComponent(`${location} cityscape landscape travel tourism`);
+    }
     
     // Make request to Pixabay API
     const response = await fetch(
-      `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${searchQuery}&image_type=photo&orientation=horizontal&per_page=3&safesearch=true&min_width=1000`
+      `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${searchQuery}&image_type=photo&orientation=horizontal&per_page=5&safesearch=true&min_width=1000`
     );
+    
+    console.log(`Pixabay API status: ${response.status}`);
     
     if (!response.ok) {
       throw new Error(`Pixabay API error: ${response.status}`);
@@ -41,14 +54,14 @@ serve(async (req) => {
     
     const data = await response.json();
     
+    console.log(`Found ${data.hits?.length || 0} images for query "${searchQuery}"`);
+    
     // Extract image URLs from the response
     const images = data.hits.map((hit: any) => ({
       url: hit.largeImageURL,
       credit: hit.user,
       tags: hit.tags
     }));
-    
-    console.log(`Found ${images.length} images for ${location}`);
     
     return new Response(
       JSON.stringify({ images }),
@@ -58,7 +71,10 @@ serve(async (req) => {
     console.error("Error fetching location images:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to fetch location images" }),
+      JSON.stringify({ 
+        error: error.message || "Failed to fetch location images",
+        images: [] 
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
