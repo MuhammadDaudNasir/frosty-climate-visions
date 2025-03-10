@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
@@ -191,3 +190,6 @@ export const useAuth = () => {
 
 // Fix: Use 'export type' for re-exporting types with isolatedModules
 export type { UserProfile, UserPreferences } from '@/types/auth';
+
+export { AuthProvider, useAuth };
+export type { User, UserProfile };

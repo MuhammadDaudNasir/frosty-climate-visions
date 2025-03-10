@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Compass, Wind, Cloud, Thermometer, MapPin, ImageIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
 interface LocationInfoProps {
   locationData: {

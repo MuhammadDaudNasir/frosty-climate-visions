@@ -41,6 +41,9 @@ serve(async (req) => {
       searchQuery = encodeURIComponent(`${location} cityscape landscape travel tourism`);
     }
     
+    // Add a small delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     // Make request to Pixabay API
     const response = await fetch(
       `https://pixabay.com/api/?key=${PIXABAY_API_KEY}&q=${searchQuery}&image_type=photo&orientation=horizontal&per_page=5&safesearch=true&min_width=1000`
@@ -64,7 +67,7 @@ serve(async (req) => {
     }));
     
     return new Response(
-      JSON.stringify({ images }),
+      JSON.stringify({ images, searchQuery }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
