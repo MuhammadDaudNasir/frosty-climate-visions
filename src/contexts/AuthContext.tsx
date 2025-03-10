@@ -189,4 +189,5 @@ export const useAuth = () => {
   return context;
 };
 
-export { UserProfile, UserPreferences } from '@/types/auth';
+// Fix: Use 'export type' for re-exporting types with isolatedModules
+export type { UserProfile, UserPreferences } from '@/types/auth';
