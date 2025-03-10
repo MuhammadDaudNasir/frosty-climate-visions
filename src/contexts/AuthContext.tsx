@@ -3,35 +3,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
-
-export interface UserPreferences {
-  unit: 'metric' | 'imperial';
-  wind_speed: 'km/h' | 'mph' | 'm/s';
-  dark_mode: boolean;
-  temperature_unit: 'celsius' | 'fahrenheit';
-}
-
-export interface UserProfile {
-  id: string;
-  username: string | null;
-  avatar_url: string | null;
-  updated_at: string;
-  created_at: string;
-  favorite_locations: string[] | null;
-  preferences: UserPreferences;
-}
-
-interface AuthContextProps {
-  user: User | null;
-  session: Session | null;
-  profile: UserProfile | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username?: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  updateUserPreferences: (preferences: Partial<UserPreferences>) => Promise<void>;
-}
+import { UserProfile, UserPreferences, AuthContextProps } from '@/types/auth';
+import { fetchUserProfile, updatePreferences } from '@/utils/profileUtils';
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
@@ -47,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        loadUserProfile(session.user.id);
       } else {
         setIsLoading(false);
       }
@@ -60,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        await loadUserProfile(session.user.id);
       } else {
         setProfile(null);
         setIsLoading(false);
@@ -72,40 +45,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const loadUserProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Ensure preferences exists and has default values if not set
-      if (!data.preferences) {
-        data.preferences = {
-          unit: 'metric',
-          wind_speed: 'km/h',
-          dark_mode: false,
-          temperature_unit: 'celsius'
-        };
-      }
-
-      // Cast the data to UserProfile type after ensuring preferences has the right structure
-      setProfile({
-        id: data.id,
-        username: data.username,
-        avatar_url: data.avatar_url,
-        updated_at: data.updated_at,
-        created_at: data.created_at,
-        favorite_locations: data.favorite_locations,
-        preferences: data.preferences as UserPreferences
-      });
-    } catch (error: any) {
-      console.error('Error fetching profile:', error.message);
+      const userProfile = await fetchUserProfile(userId);
+      setProfile(userProfile);
     } finally {
       setIsLoading(false);
     }
@@ -213,48 +156,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateUserPreferences = async (preferences: Partial<UserPreferences>) => {
     if (!user) return;
     
-    try {
-      // Get current profile
-      const currentProfile = profile;
-      if (!currentProfile) {
-        throw new Error("Profile not loaded");
-      }
-      
-      // Merge new preferences with existing ones
-      const updatedPreferences = {
-        ...currentProfile.preferences,
-        ...preferences
-      };
-      
-      // Update in database
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          preferences: updatedPreferences,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-        
-      if (error) throw error;
-      
-      // Update local state
-      setProfile({
-        ...currentProfile,
-        preferences: updatedPreferences,
-        updated_at: new Date().toISOString()
-      });
-      
-      toast({
-        title: "Preferences updated",
-        description: "Your settings have been saved successfully"
-      });
-    } catch (error) {
-      console.error('Error updating preferences:', error);
-      toast({
-        title: "Update failed",
-        description: error instanceof Error ? error.message : "Failed to update preferences",
-        variant: "destructive"
-      });
+    const updatedProfile = await updatePreferences(user.id, profile, preferences);
+    if (updatedProfile) {
+      setProfile(updatedProfile);
     }
   };
 
@@ -284,3 +188,5 @@ export const useAuth = () => {
   }
   return context;
 };
+
+export { UserProfile, UserPreferences } from '@/types/auth';
