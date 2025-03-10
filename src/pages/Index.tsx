@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WeatherBackground from '@/components/WeatherBackground';
@@ -7,13 +8,11 @@ import EnhancedLocationSelector from '@/components/EnhancedLocationSelector';
 import MoonPhaseWidget from '@/components/MoonPhaseWidget';
 import PrecipitationWidget from '@/components/PrecipitationWidget';
 import UVIndexWidget from '@/components/UVIndexWidget';
-import UVWeekForecast from '@/components/UVWeekForecast';
 import WindMapWidget from '@/components/WindMapWidget';
 import AirQualityWidget from '@/components/AirQualityWidget';
 import PrayerTimesWidget from '@/components/PrayerTimesWidget';
 import LocationInfo from '@/components/LocationInfo';
 import SavedLocations from '@/components/SavedLocations';
-import WeatherAlerts from '@/components/WeatherAlerts';
 import { useWeather, ExtendedWeatherData } from '@/hooks/useWeather';
 import { getWeatherCondition } from '@/utils/weatherUtils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +33,7 @@ const Index = () => {
     }
   }, [weatherData]);
   
+  // Add scroll listener to show/hide location info
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -50,12 +50,14 @@ const Index = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [showLocationInfo]);
   
+  // Scroll to location info section
   const scrollToLocationInfo = () => {
     if (locationInfoRef.current) {
       locationInfoRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
   
+  // Early return for initial loading state with nice loading animation
   if (isInitialLoad) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-black">
@@ -68,6 +70,7 @@ const Index = () => {
     );
   }
   
+  // Safeguard for when weather data is not yet available
   if (!weatherData) {
     return null;
   }
@@ -75,6 +78,7 @@ const Index = () => {
   const weatherCondition = getWeatherCondition(weatherData.current.condition.code);
   const isDay = weatherData.current.is_day === 1;
   
+  // Calculate appropriate greeting based on the time
   const currentHour = new Date(weatherData.location.localtime).getHours();
   let greeting = "Good morning";
   if (currentHour >= 12 && currentHour < 18) {
@@ -83,6 +87,7 @@ const Index = () => {
     greeting = "Good evening";
   }
 
+  // Calculate precipitation data
   const getPrecipitationData = (data: ExtendedWeatherData) => {
     const currentHour = new Date(data.location.localtime).getHours();
     const hourlyData = data.hourlyForecast?.[currentHour];
@@ -103,6 +108,7 @@ const Index = () => {
     };
   };
 
+  // Get moon phase data
   const getMoonPhaseData = (data: ExtendedWeatherData) => {
     if (!data.astronomy?.astro) {
       return { 
@@ -118,6 +124,7 @@ const Index = () => {
     const moonrise = data.astronomy.astro.moonrise;
     const moonset = data.astronomy.astro.moonset;
     
+    // Convert text moon phase to numeric value (0-1)
     let phase = 0;
     if (moonPhaseText === "New Moon") phase = 0;
     else if (moonPhaseText === "Waxing Crescent") phase = 0.125;
@@ -144,6 +151,7 @@ const Index = () => {
     moonset: moonsetTime
   } = getMoonPhaseData(weatherData);
   
+  // Get hourly forecasts for widgets
   const getHourlyForecasts = () => {
     if (!weatherData.hourlyForecast) return [];
     
@@ -158,24 +166,11 @@ const Index = () => {
   
   const hourlyForecasts = getHourlyForecasts();
 
-  const getWeeklyUVForecast = () => {
-    if (!weatherData.forecast?.forecastday) return [];
-    
-    return weatherData.forecast.forecastday.map(day => ({
-      date: day.date,
-      uvIndex: day.day.uv || 0, // Added fallback to 0 if uv is undefined
-      maxTemp: day.day.maxtemp_c,
-      condition: day.day.condition.text,
-      conditionIcon: day.day.condition.icon
-    }));
-  };
-
-  const weeklyUVForecast = getWeeklyUVForecast();
-
   return (
     <WeatherBackground condition={weatherCondition} isDay={isDay}>
       <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8 flex flex-col max-w-4xl">
+          {/* Header section with location and time */}
           <header className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 animate-slide-down">
             <div className="flex items-center">
               <h1 className="text-2xl font-light text-white frosted-text">Climate Vision</h1>
@@ -227,10 +222,12 @@ const Index = () => {
             </div>
           </header>
           
+          {/* Main content area */}
           <main className="flex-1 flex flex-col items-center justify-center gap-6">
             <div className="w-full animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <TimeDisplay className="mb-4" />
               
+              {/* Centered greeting with username from profile if available */}
               <h2 className="text-3xl text-center font-light text-white frosted-text mb-1">
                 {greeting}
                 {user && profile?.username && (
@@ -243,6 +240,7 @@ const Index = () => {
               </p>
             </div>
             
+            {/* Saved locations section (only visible when logged in) */}
             {user && (
               <div className="w-full max-w-lg mx-auto mb-2" style={{ animationDelay: '0.3s' }}>
                 <SavedLocations 
@@ -256,6 +254,7 @@ const Index = () => {
               <WeatherCard weatherData={weatherData} />
             </div>
             
+            {/* Additional weather widgets */}
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
               <UVIndexWidget uvIndex={weatherData.current.uv} />
               <MoonPhaseWidget 
@@ -267,7 +266,9 @@ const Index = () => {
               <AirQualityWidget 
                 airQuality={weatherData.airQuality!}
               />
-              <WeatherAlerts />
+              <PrayerTimesWidget 
+                prayerTimes={weatherData.prayerTimes!}
+              />
             </div>
             
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
@@ -286,15 +287,7 @@ const Index = () => {
               />
             </div>
             
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.75s' }}>
-              <PrayerTimesWidget 
-                prayerTimes={weatherData.prayerTimes!}
-              />
-              {weeklyUVForecast.length > 0 && (
-                <UVWeekForecast forecast={weeklyUVForecast} />
-              )}
-            </div>
-            
+            {/* Forecast preview */}
             {weatherData.forecast && (
               <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '0.8s' }}>
                 {weatherData.forecast.forecastday.slice(0, 3).map((day) => (
@@ -317,6 +310,7 @@ const Index = () => {
               </div>
             )}
             
+            {/* Learn more about this location button */}
             <div className="w-full text-center mt-4 animate-fade-in" style={{ animationDelay: '0.9s' }}>
               <Button 
                 variant="ghost" 
@@ -329,6 +323,7 @@ const Index = () => {
             </div>
           </main>
           
+          {/* Footer with Powered by Pineapple and copyright */}
           <footer className="text-center mt-8 animate-fade-in" style={{ animationDelay: '1s' }}>
             <p className="text-white/40 text-xs mb-1">Data provided by WeatherAPI.com</p>
             <p className="text-white/30 text-[10px] mb-1">Powered by Pineapple</p>
@@ -336,6 +331,7 @@ const Index = () => {
           </footer>
         </div>
         
+        {/* Location info section (scrollable) */}
         <div ref={locationInfoRef}>
           {weatherData.locationInfo && (
             <LocationInfo locationData={weatherData.locationInfo} />

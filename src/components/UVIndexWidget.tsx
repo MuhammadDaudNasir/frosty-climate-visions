@@ -16,7 +16,6 @@ interface UVIndexWidgetProps {
 
 const UVIndexWidget: React.FC<UVIndexWidgetProps> = ({ uvIndex, className = "" }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
 
   // Get UV Index classification
   const getUVLevel = (uvIndex: number): 
@@ -85,41 +84,30 @@ const UVIndexWidget: React.FC<UVIndexWidgetProps> = ({ uvIndex, className = "" }
   return (
     <>
       <div 
-        className={`frost-panel p-4 rounded-2xl transition-all cursor-pointer ${className} ${isHovering ? 'bg-white/15' : 'bg-white/10'}`}
+        className={`frost-panel p-4 rounded-2xl hover-lift transition-all cursor-pointer ${className}`}
         onClick={() => setDialogOpen(true)}
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
       >
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-white text-sm font-medium">UV Index</h3>
-          <Sun 
-            size={16} 
-            className={`text-white/70 transition-transform ${isHovering ? 'animate-rotate-sun' : ''}`} 
-          />
+          <Sun size={16} className="text-white/70" />
         </div>
         
         <div className="flex flex-col items-center justify-center my-3">
-          <span className={`text-3xl font-medium ${color} transition-all duration-300 transform ${isHovering ? 'scale-110' : ''}`}>
-            {uvIndex}
-          </span>
-          <span className={`text-sm font-medium mt-1 ${color} transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-80'}`}>
-            {level}
-          </span>
+          <span className={`text-3xl font-medium ${color}`}>{uvIndex}</span>
+          <span className={`text-sm font-medium mt-1 ${color}`}>{level}</span>
         </div>
         
-        <p className={`text-white/70 text-xs text-center mt-1 transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-80'}`}>
-          {advice}
-        </p>
+        <p className="text-white/70 text-xs text-center mt-1">{advice}</p>
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md frost-glass-dark border-white/10 backdrop-blur-xl bg-black/60 animate-scale-reveal">
+        <DialogContent className="sm:max-w-md frost-glass-dark border-white/10 backdrop-blur-xl bg-black/60">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-white">
-              <Sun className={`${color} animate-pulse-subtle`} size={18} />
+              <Sun className={color} size={18} />
               <span>UV Index: <span className={color}>{uvIndex} - {level}</span></span>
             </DialogTitle>
-            <DialogDescription className="text-white/70 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <DialogDescription className="text-white/70">
               Current ultraviolet radiation level at your location
             </DialogDescription>
           </DialogHeader>
@@ -127,34 +115,34 @@ const UVIndexWidget: React.FC<UVIndexWidgetProps> = ({ uvIndex, className = "" }
           <div className="space-y-4 text-white">
             <UvScale />
             
-            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div className="space-y-2">
               <h4 className="font-medium text-sm">What does this mean?</h4>
               <p className="text-sm text-white/80">{detailedAdvice}</p>
             </div>
             
-            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="space-y-2">
               <h4 className="font-medium text-sm">Protection required</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-white animate-pulse-subtle' : 'bg-white/30'}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-white' : 'bg-white/30'}`}></div>
                   <span className={uvIndex >= 3 ? '' : 'text-white/60'}>Sunscreen</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-white animate-pulse-subtle' : 'bg-white/30'}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 3 ? 'bg-white' : 'bg-white/30'}`}></div>
                   <span className={uvIndex >= 3 ? '' : 'text-white/60'}>Sunglasses</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 5 ? 'bg-white animate-pulse-subtle' : 'bg-white/30'}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 5 ? 'bg-white' : 'bg-white/30'}`}></div>
                   <span className={uvIndex >= 5 ? '' : 'text-white/60'}>Hat</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 8 ? 'bg-white animate-pulse-subtle' : 'bg-white/30'}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${uvIndex >= 8 ? 'bg-white' : 'bg-white/30'}`}></div>
                   <span className={uvIndex >= 8 ? '' : 'text-white/60'}>Seek Shade</span>
                 </div>
               </div>
             </div>
             
-            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <div className="space-y-2">
               <h4 className="font-medium text-sm">UV Index Times</h4>
               <p className="text-sm text-white/70">
                 UV radiation is typically strongest between 10am and 4pm, even on cloudy days.

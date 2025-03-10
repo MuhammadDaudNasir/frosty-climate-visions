@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, X, Loader2, StarIcon, Heart, MapPin } from 'lucide-react';
+import { Plus, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
 
 interface SavedLocationsProps {
   currentLocation: string;
@@ -20,7 +19,6 @@ const SavedLocations: React.FC<SavedLocationsProps> = ({
   const [savedLocations, setSavedLocations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const navigate = useNavigate();
 
   // Fetch saved locations when the component mounts or user changes
   useEffect(() => {
@@ -57,17 +55,7 @@ const SavedLocations: React.FC<SavedLocationsProps> = ({
   };
 
   const saveCurrentLocation = async () => {
-    if (!user) {
-      // Prompt user to login/signup
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to save locations",
-      });
-      navigate('/auth');
-      return;
-    }
-    
-    if (!currentLocation || savedLocations.includes(currentLocation)) return;
+    if (!user || !currentLocation || savedLocations.includes(currentLocation)) return;
     
     setIsSaving(true);
     try {
@@ -80,7 +68,7 @@ const SavedLocations: React.FC<SavedLocationsProps> = ({
       
       if (error) throw error;
       
-      setSavedLocations(prev => [...prev, currentLocation]);
+      setSavedLocations([...savedLocations, currentLocation]);
       toast({
         title: 'Location saved',
         description: `${currentLocation} has been added to your saved locations`,
@@ -124,6 +112,9 @@ const SavedLocations: React.FC<SavedLocationsProps> = ({
     }
   };
 
+  // If the user isn't logged in, don't show this component
+  if (!user) return null;
+
   return (
     <div className="w-full space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -132,63 +123,50 @@ const SavedLocations: React.FC<SavedLocationsProps> = ({
           variant="ghost"
           size="sm"
           onClick={saveCurrentLocation}
-          disabled={isSaving || (user && savedLocations.includes(currentLocation))}
+          disabled={isSaving || savedLocations.includes(currentLocation)}
           className="bg-white/10 hover:bg-white/20 text-white"
         >
           {isSaving ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
-            <Heart className={`h-4 w-4 mr-2 ${savedLocations.includes(currentLocation) ? 'fill-red-400 text-red-400' : ''}`} />
+            <Plus className="h-4 w-4 mr-2" />
           )}
-          {user ? 'Save Current' : 'Sign in to Save'}
+          Save Current
         </Button>
       </div>
 
-      {user ? (
-        isLoading ? (
-          <div className="flex justify-center py-4">
-            <Loader2 className="h-6 w-6 text-white animate-spin" />
-          </div>
-        ) : savedLocations.length === 0 ? (
-          <div className="text-white/60 text-center py-4 frost-panel rounded-xl p-4">
-            <MapPin className="h-6 w-6 mx-auto mb-2 opacity-50" />
-            <p>No saved locations yet. Save your favorite places!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {savedLocations.map((location) => (
-              <div 
-                key={location}
-                className={`
-                  relative group frost-panel px-3 py-2 rounded-xl cursor-pointer
-                  ${location === currentLocation ? 'bg-white/20' : 'bg-white/5'}
-                  hover:bg-white/15 transition-all hover:scale-105 duration-300
-                `}
-                onClick={() => onLocationSelect(location)}
-              >
-                <div className="text-white truncate pr-6">{location}</div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeLocation(location);
-                  }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-white/60 hover:text-white/90 transition-opacity"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-6 w-6 text-white animate-spin" />
+        </div>
+      ) : savedLocations.length === 0 ? (
+        <div className="text-white/60 text-center py-4">
+          No saved locations yet. Save your favorite places!
+        </div>
       ) : (
-        <div className="text-white/60 text-center py-4 frost-panel rounded-xl p-4">
-          <Button 
-            variant="ghost"
-            onClick={() => navigate('/auth')}
-            className="bg-white/10 hover:bg-white/20 text-white mx-auto"
-          >
-            Sign in to save and manage your favorite locations
-          </Button>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {savedLocations.map((location) => (
+            <div 
+              key={location}
+              className={`
+                relative group frost-panel px-3 py-2 rounded-xl cursor-pointer
+                ${location === currentLocation ? 'bg-white/20' : 'bg-white/5'}
+                hover:bg-white/15 transition-colors
+              `}
+              onClick={() => onLocationSelect(location)}
+            >
+              <div className="text-white truncate pr-6">{location}</div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeLocation(location);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-white/60 hover:text-white/90 transition-opacity"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
